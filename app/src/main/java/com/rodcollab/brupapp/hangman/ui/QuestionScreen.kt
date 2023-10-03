@@ -1,5 +1,6 @@
 package com.rodcollab.brupapp.hangman.ui
 
+import android.content.res.Configuration
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectTapGestures
@@ -14,6 +15,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.sizeIn
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -25,6 +27,7 @@ import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.contentColorFor
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -38,6 +41,7 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -58,11 +62,11 @@ fun QuestionScreen(game: HangmanGame) {
 
     var answer by remember { mutableStateOf(game.getTrialState().answer) }
 
-    var tries: Int by rememberSaveable { mutableStateOf(game.getTrialState().tries) }
-    var chances: Int by rememberSaveable { mutableStateOf(game.getTrialState().chances) }
+    var tries: Int by remember { mutableStateOf(game.getTrialState().tries) }
+    var chances: Int by remember { mutableStateOf(game.getTrialState().chances) }
 
-    var hits: Int by rememberSaveable { mutableStateOf(game.getTrialState().hits) }
-    var wrongs: Int by rememberSaveable { mutableStateOf(game.getTrialState().errors) }
+    var hits: Int by remember { mutableStateOf(game.getTrialState().hits) }
+    var wrongs: Int by remember { mutableStateOf(game.getTrialState().errors) }
 
     var usedLetters: String by remember { mutableStateOf(game.getTrialState().usedLetters.toString()) }
 
@@ -74,8 +78,8 @@ fun QuestionScreen(game: HangmanGame) {
         "Used letters: " to usedLetters
     )
 
-    var openDialogLostGame by remember { mutableStateOf(false) }
-    var openDialogWinGame by remember { mutableStateOf(false) }
+    var openDialogLostGame by rememberSaveable { mutableStateOf(false) }
+    var openDialogWinGame by rememberSaveable { mutableStateOf(false) }
 
     var resetGame by remember { mutableStateOf(false) }
 
@@ -120,6 +124,8 @@ fun QuestionScreen(game: HangmanGame) {
         }
     }
 
+    val localConfig = LocalConfiguration.current
+
     Scaffold(topBar = {
         CenterAlignedTopAppBar(modifier = Modifier.shadow(6.dp), title = {
             Text(text = "Hangman")
@@ -130,19 +136,107 @@ fun QuestionScreen(game: HangmanGame) {
                 .fillMaxSize()
                 .padding(it)
         ) {
-            Column(
-                Modifier
-                    .align(Alignment.Center),
-            ) {
-                score.forEach { (text, value) ->
-                    Text(modifier = Modifier.padding(start = 16.dp), text = text + value.toString())
-                }
+            if(localConfig.orientation == Configuration.ORIENTATION_LANDSCAPE) {
+                Row(horizontalArrangement = Arrangement.SpaceBetween) {
+                    Column(modifier = Modifier.padding(16.dp)) {
+                        score.forEach { (text, value) ->
+                            Text(modifier = Modifier.padding(start = 16.dp), text = text + value.toString())
+                        }
+                    }
+                    Spacer(modifier = Modifier.weight(1f))
+                    Column(modifier = Modifier.padding(16.dp),horizontalAlignment = Alignment.CenterHorizontally) {
+                        Row(
+                            modifier = Modifier
+                                .align(Alignment.CenterHorizontally)
+                                .padding(24.dp)
+                                .wrapContentSize(unbounded = true),
+                            horizontalArrangement = Arrangement.SpaceBetween
+                        ) {
+                            chars.forEach { char ->
 
-                Box(Modifier.fillMaxWidth().padding(16.dp)) {
+                                val letterGuessed = game.guessedLetters().any { l -> char == l }
+                                LetterItem(char.toString(), letterGuessed)
+                                Spacer(modifier = Modifier.size(8.dp))
+                            }
+                        }
+
+                        Spacer(modifier = Modifier.height(16.dp))
+
+                        alphabet.chunked(10).forEach { chars ->
+
+                            Row(
+                                modifier = Modifier
+                                    .padding(start = 16.dp)
+                                    .align(Alignment.CenterHorizontally),
+                                horizontalArrangement = Arrangement.Center
+                            ) {
+                                chars.forEach { char ->
+                                    Card(
+                                        colors = CardDefaults.cardColors(Color(255, 255, 255, 255)),
+                                        shape = RoundedCornerShape(12.dp),
+                                        border = BorderStroke(
+                                            2.dp, Color(
+                                                250,
+                                                128,
+                                                46
+                                            )
+                                        ),
+                                        modifier = Modifier
+                                            .graphicsLayer {
+                                                scaleX =
+                                                    if (char == letterTapped) 1.2f else 1.0f
+                                                scaleY =
+                                                    if (char == letterTapped) 1.2f else 1.0f
+                                            }
+                                            .pointerInput(Unit) {
+                                                detectTapGestures(
+                                                    onPress = {
+
+                                                        val letterGuessed = game
+                                                            .guessedLetters()
+                                                            .any { l -> char == l }
+
+                                                        if (!letterGuessed) {
+                                                            letterTapped = char
+
+                                                            game.verifyAnswerThenUpdateGameState(
+                                                                char
+                                                            )
+                                                        }
+
+                                                    }
+                                                )
+                                            }
+                                            .padding(4.dp),
+                                        elevation = CardDefaults.cardElevation(4.dp)
+                                    ) {
+                                        Text(
+                                            text = char.toString(),
+                                            maxLines = 1,
+                                            modifier = Modifier
+                                                .padding(12.dp)
+                                        )
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            } else {
+                Column(
+                    Modifier
+                        .align(Alignment.Center)
+                        .sizeIn(),
+                ) {
+
+                    score.forEach { (text, value) ->
+                        Text(modifier = Modifier.padding(start = 16.dp), text = text + value.toString())
+                    }
+
                     Row(
                         modifier = Modifier
-                            .align(Alignment.Center)
-                            .padding(42.dp)
+                            .align(Alignment.CenterHorizontally)
+                            .padding(24.dp)
                             .wrapContentSize(unbounded = true),
                         horizontalArrangement = Arrangement.SpaceBetween
                     ) {
@@ -153,64 +247,64 @@ fun QuestionScreen(game: HangmanGame) {
                             Spacer(modifier = Modifier.size(8.dp))
                         }
                     }
-                }
 
-                Spacer(modifier = Modifier.height(16.dp))
+                    Spacer(modifier = Modifier.height(16.dp))
 
-                alphabet.chunked(8).forEach { chars ->
+                    alphabet.chunked(8).forEach { chars ->
 
-                    Row(
-                        modifier = Modifier
-                            .padding(start = 16.dp)
-                            .align(Alignment.CenterHorizontally)
-                            .fillMaxWidth(),
-                    ) {
-                        chars.forEach { char ->
-                            Card(
-                                colors = CardDefaults.cardColors(Color(255, 255, 255, 255)),
-                                shape = RoundedCornerShape(12.dp),
-                                border = BorderStroke(
-                                    2.dp, Color(
-                                        250,
-                                        128,
-                                        46
-                                    )
-                                ),
-                                modifier = Modifier
-                                    .graphicsLayer {
-                                        scaleX =
-                                            if (char == letterTapped) 1.2f else 1.0f
-                                        scaleY =
-                                            if (char == letterTapped) 1.2f else 1.0f
-                                    }
-                                    .pointerInput(Unit) {
-                                        detectTapGestures(
-                                            onPress = {
-
-                                                val letterGuessed = game
-                                                    .guessedLetters()
-                                                    .any { l -> char == l }
-
-                                                if (!letterGuessed) {
-                                                    letterTapped = char
-
-                                                    game.verifyAnswerThenUpdateGameState(
-                                                        char
-                                                    )
-                                                }
-
-                                            }
+                        Row(
+                            modifier = Modifier
+                                .padding(start = 16.dp)
+                                .align(Alignment.CenterHorizontally)
+                                .fillMaxWidth(),
+                        ) {
+                            chars.forEach { char ->
+                                Card(
+                                    colors = CardDefaults.cardColors(Color(255, 255, 255, 255)),
+                                    shape = RoundedCornerShape(12.dp),
+                                    border = BorderStroke(
+                                        2.dp, Color(
+                                            250,
+                                            128,
+                                            46
                                         )
-                                    }
-                                    .padding(4.dp),
-                                elevation = CardDefaults.cardElevation(4.dp)
-                            ) {
-                                Text(
-                                    text = char.toString(),
-                                    maxLines = 1,
+                                    ),
                                     modifier = Modifier
-                                        .padding(12.dp)
-                                )
+                                        .graphicsLayer {
+                                            scaleX =
+                                                if (char == letterTapped) 1.2f else 1.0f
+                                            scaleY =
+                                                if (char == letterTapped) 1.2f else 1.0f
+                                        }
+                                        .pointerInput(Unit) {
+                                            detectTapGestures(
+                                                onPress = {
+
+                                                    val letterGuessed = game
+                                                        .guessedLetters()
+                                                        .any { l -> char == l }
+
+                                                    if (!letterGuessed) {
+                                                        letterTapped = char
+
+                                                        game.verifyAnswerThenUpdateGameState(
+                                                            char
+                                                        )
+                                                    }
+
+                                                }
+                                            )
+                                        }
+                                        .padding(4.dp),
+                                    elevation = CardDefaults.cardElevation(4.dp)
+                                ) {
+                                    Text(
+                                        text = char.toString(),
+                                        maxLines = 1,
+                                        modifier = Modifier
+                                            .padding(12.dp)
+                                    )
+                                }
                             }
                         }
                     }

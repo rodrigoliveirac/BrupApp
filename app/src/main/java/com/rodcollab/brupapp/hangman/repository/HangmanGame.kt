@@ -83,7 +83,7 @@ class HangmanGameImpl(private val dataSet: List<String>) : HangmanGame {
         }
     }
 
-    fun getSourceAnswer(dataSet: List<String>): List<Char> {
+    private fun getSourceAnswer(dataSet: List<String>): List<Char> {
         val random = dataSet.random()
         val answer = mutableListOf<Char>()
         random.forEach {
@@ -92,15 +92,15 @@ class HangmanGameImpl(private val dataSet: List<String>) : HangmanGame {
         return answer
     }
 
-    fun incrementTries() {
+    private fun incrementTries() {
         tries += 1
     }
 
-    fun isLetterExists(letter: Char, questionStorage: List<Char>): Boolean {
+    private fun isLetterExists(letter: Char, questionStorage: List<Char>): Boolean {
         return questionStorage.any { it == letter }
     }
 
-    fun updateScore(letterExists: Boolean) {
+    private fun updateScore(letterExists: Boolean) {
         if (letterExists) {
             hits += 1
         } else {
@@ -109,7 +109,7 @@ class HangmanGameImpl(private val dataSet: List<String>) : HangmanGame {
         }
     }
 
-    fun addToGuessedLetters(letter: Char) {
+    private fun addToGuessedLetters(letter: Char) {
         usedLetters.add(letter)
     }
 }

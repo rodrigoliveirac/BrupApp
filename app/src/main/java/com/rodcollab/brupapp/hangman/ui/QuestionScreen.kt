@@ -6,6 +6,7 @@ import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -37,6 +38,7 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.rodcollab.brupapp.hangman.repository.HangmanGame
@@ -47,7 +49,7 @@ val alphabet = mutableListOf(
     'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z'
 )
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
 fun QuestionScreen(game: HangmanGame) {
 
@@ -79,12 +81,15 @@ fun QuestionScreen(game: HangmanGame) {
 
     var chars by remember { mutableStateOf(game.getAnswerListChar()) }
 
-    if(game.getTrialState().chances == 0) {
+    if (game.getTrialState().chances == 0) {
         openDialogLostGame = true
     }
 
-    if(game.getTrialState().hits == game.getTrialState().chars.size) {
-        openDialogWinGame = true
+    if (game.getTrialState().usedLetters.containsAll(game.getTrialState().chars)) {
+        LaunchedEffect(Unit) {
+            delay(100)
+            openDialogWinGame = true
+        }
     }
 
 
@@ -116,7 +121,7 @@ fun QuestionScreen(game: HangmanGame) {
     }
 
     Scaffold(topBar = {
-        CenterAlignedTopAppBar(modifier = Modifier.shadow(6.dp),title = {
+        CenterAlignedTopAppBar(modifier = Modifier.shadow(6.dp), title = {
             Text(text = "Hangman")
         })
     }) {
@@ -127,34 +132,39 @@ fun QuestionScreen(game: HangmanGame) {
         ) {
             Column(
                 Modifier
-                    .padding(24.dp)
                     .align(Alignment.Center),
             ) {
                 score.forEach { (text, value) ->
-                    Text(text = text + value.toString())
+                    Text(modifier = Modifier.padding(start = 16.dp), text = text + value.toString())
                 }
 
-                Row(
-                    modifier = Modifier.align(Alignment.CenterHorizontally),
-                    horizontalArrangement = Arrangement.SpaceBetween
-                ) {
-                    chars.forEach { char ->
+                Box(Modifier.fillMaxWidth().padding(16.dp)) {
+                    Row(
+                        modifier = Modifier
+                            .align(Alignment.Center)
+                            .padding(42.dp)
+                            .wrapContentSize(unbounded = true),
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        chars.forEach { char ->
 
-                        val letterGuessed = game.guessedLetters().any { l -> char == l }
-
-                        LetterItem(char.toString(), letterGuessed)
-                        Spacer(modifier = Modifier.size(8.dp))
+                            val letterGuessed = game.guessedLetters().any { l -> char == l }
+                            LetterItem(char.toString(), letterGuessed)
+                            Spacer(modifier = Modifier.size(8.dp))
+                        }
                     }
                 }
 
                 Spacer(modifier = Modifier.height(16.dp))
 
-                alphabet.chunked(10).forEach { chars ->
+                alphabet.chunked(8).forEach { chars ->
+
                     Row(
-                        modifier = Modifier.align(Alignment.CenterHorizontally).fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween
+                        modifier = Modifier
+                            .padding(start = 16.dp)
+                            .align(Alignment.CenterHorizontally)
+                            .fillMaxWidth(),
                     ) {
-                        Spacer(Modifier.weight(1f))
                         chars.forEach { char ->
                             Card(
                                 colors = CardDefaults.cardColors(Color(255, 255, 255, 255)),
@@ -203,7 +213,6 @@ fun QuestionScreen(game: HangmanGame) {
                                 )
                             }
                         }
-                        Spacer(Modifier.weight(1f))
                     }
                 }
             }
@@ -240,7 +249,7 @@ fun QuestionScreen(game: HangmanGame) {
         )
     }
 
-    if(openDialogWinGame) {
+    if (openDialogWinGame) {
         AlertDialog(
             title = {
                 Box(Modifier.fillMaxWidth()) {
@@ -282,12 +291,12 @@ fun LetterItem(letter: String, letterGuessed: Boolean) {
                 .padding(bottom = 8.dp)
                 .graphicsLayer {
                     alpha = if (letterGuessed) 1f else 0f
-                }, text = letter.uppercase(), fontSize = 24.sp
+                }, text = letter.uppercase(), fontSize = 16.sp, fontWeight = FontWeight.ExtraBold
         )
         Spacer(
             modifier = Modifier
-                .height(3.dp)
-                .width(24.dp)
+                .height(2.dp)
+                .width(12.dp)
                 .background(Color.LightGray)
         )
     }

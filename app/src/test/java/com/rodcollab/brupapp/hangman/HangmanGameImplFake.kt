@@ -38,7 +38,7 @@ class HangmanGameImplFake(private val source: List<Char>) : HangmanGame {
         hits = hits,
         errors = errors,
         answer = answer,
-        guessedLetters = guessedLetters
+        usedLetters = guessedLetters
     )
 
 
@@ -57,6 +57,9 @@ class HangmanGameImplFake(private val source: List<Char>) : HangmanGame {
     override fun guessedLetters(): List<Char> = guessedLetters
 
     override fun getAnswerListChar(): List<Char> = source
+    override fun resetGame() {
+        TODO("Not yet implemented")
+    }
 
     fun incrementTries() {
         tries += 1

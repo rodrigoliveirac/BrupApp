@@ -29,7 +29,7 @@ class HangmanGameUnitTest {
 
         val trialActual = Trial(
             chars = questionStorage,
-            guessedLetters = defaultGame.guessedLetters,
+            usedLetters = defaultGame.guessedLetters,
             chances = defaultGame.chances,
             tries = defaultGame.tries,
             hits = defaultGame.hits,

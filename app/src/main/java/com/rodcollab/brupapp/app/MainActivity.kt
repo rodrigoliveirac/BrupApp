@@ -11,15 +11,12 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import com.rodcollab.brupapp.app.theme.BrupAppTheme
-import com.rodcollab.brupapp.hangman.repository.HangmanGame
+import com.rodcollab.brupapp.data.oop
+import com.rodcollab.brupapp.data.programming
+import com.rodcollab.brupapp.hangman.repository.HangmanGameImpl
 import com.rodcollab.brupapp.hangman.ui.QuestionScreen
 
 class MainActivity : ComponentActivity() {
-
-    private val game: HangmanGame by lazy {
-        val application = application as BrupApp
-        application.hangmanGame
-    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -31,7 +28,7 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    QuestionScreen(game = game)
+                    QuestionScreen(game = HangmanGameImpl.getInstance(oop + programming))
                 }
             }
         }

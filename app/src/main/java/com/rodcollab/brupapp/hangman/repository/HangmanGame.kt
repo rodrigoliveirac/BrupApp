@@ -16,6 +16,16 @@ interface HangmanGame {
 
 class HangmanGameImpl(private val dataSet: List<String>) : HangmanGame {
 
+    companion object {
+        var instance: HangmanGame? = null
+        fun getInstance(dataSet: List<String>): HangmanGame {
+            if(instance == null) {
+                instance = HangmanGameImpl(dataSet)
+            }
+            return instance!!
+        }
+    }
+
     var sourceAnswer = getSourceAnswer(dataSet = dataSet)
         private set
 

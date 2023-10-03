@@ -12,6 +12,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import com.rodcollab.brupapp.app.theme.BrupAppTheme
 import com.rodcollab.brupapp.data.oop
+import com.rodcollab.brupapp.data.programming
 import com.rodcollab.brupapp.hangman.repository.HangmanGameImpl
 import com.rodcollab.brupapp.hangman.ui.QuestionScreen
 
@@ -25,9 +26,9 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    val dataSet = oop
+                    val dataSet = oop + programming
 
-                    QuestionScreen(game =HangmanGameImpl(dataSet))
+                    QuestionScreen(game = HangmanGameImpl(dataSet))
                 }
             }
         }

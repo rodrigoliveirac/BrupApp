@@ -1,4 +1,4 @@
-package com.rodcollab.brupapp.ui.theme
+package com.rodcollab.brupapp.app.theme
 
 import androidx.compose.material3.Typography
 import androidx.compose.ui.text.TextStyle

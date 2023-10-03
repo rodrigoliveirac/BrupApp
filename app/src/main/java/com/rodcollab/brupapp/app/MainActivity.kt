@@ -1,4 +1,4 @@
-package com.rodcollab.brupapp
+package com.rodcollab.brupapp.app
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -10,18 +10,23 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
-import com.rodcollab.brupapp.ui.theme.BrupAppTheme
+import com.rodcollab.brupapp.app.theme.BrupAppTheme
+import com.rodcollab.brupapp.hangman.repository.HangmanGameImpl
+import com.rodcollab.brupapp.hangman.ui.QuestionScreen
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
+
             BrupAppTheme {
                 Surface(
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    Greeting("Android")
+                    val dataSet = mutableListOf("hi","ok","something","man")
+
+                    QuestionScreen(game =HangmanGameImpl(dataSet))
                 }
             }
         }

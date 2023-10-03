@@ -11,11 +11,15 @@ interface HangmanGame {
     fun guessedLetters(): List<Char>
 
     fun getAnswerListChar(): List<Char>
+    fun resetGame()
 }
 
-class HangmanGameImpl(private val source: List<Char>) : HangmanGame {
+class HangmanGameImpl(private val dataSet: List<String>) : HangmanGame {
 
-    var guessedLetters = mutableListOf<Char>()
+    var sourceAnswer = getSourceAnswer(dataSet = dataSet)
+        private set
+
+    var usedLetters = mutableListOf<Char>()
         private set
 
     var hits = 0
@@ -30,7 +34,7 @@ class HangmanGameImpl(private val source: List<Char>) : HangmanGame {
     var chances = 6
         private set
 
-    var answer = getAnswer(source)
+    var answer = getAnswer(sourceAnswer)
         private set
 
     fun getAnswer(questionStorage: List<Char>): String {
@@ -42,13 +46,13 @@ class HangmanGameImpl(private val source: List<Char>) : HangmanGame {
     }
 
     override fun getTrialState(): Trial = Trial(
-        chars = source,
+        chars = sourceAnswer,
         chances = chances,
         tries = tries,
         hits = hits,
         errors = errors,
         answer = answer,
-        guessedLetters = guessedLetters
+        usedLetters = usedLetters
     )
 
 
@@ -56,7 +60,7 @@ class HangmanGameImpl(private val source: List<Char>) : HangmanGame {
 
         incrementTries()
 
-        val letterExists = isLetterExists(letter, source)
+        val letterExists = isLetterExists(letter, sourceAnswer)
 
         updateScore(letterExists)
 
@@ -64,9 +68,29 @@ class HangmanGameImpl(private val source: List<Char>) : HangmanGame {
 
     }
 
-    override fun guessedLetters(): List<Char> = guessedLetters
+    override fun guessedLetters(): List<Char> = usedLetters
 
-    override fun getAnswerListChar(): List<Char> = source
+    override fun getAnswerListChar(): List<Char> = sourceAnswer
+    override fun resetGame() {
+        this.apply {
+            chances = 6
+            errors = 0
+            hits = 0
+            tries = 0
+            usedLetters = mutableListOf()
+            sourceAnswer = getSourceAnswer(dataSet)
+            answer = getAnswer(sourceAnswer)
+        }
+    }
+
+    fun getSourceAnswer(dataSet: List<String>): List<Char> {
+        val random = dataSet.random()
+        val answer = mutableListOf<Char>()
+        random.forEach {
+            answer.add(it)
+        }
+        return answer
+    }
 
     fun incrementTries() {
         tries += 1
@@ -86,6 +110,6 @@ class HangmanGameImpl(private val source: List<Char>) : HangmanGame {
     }
 
     fun addToGuessedLetters(letter: Char) {
-        guessedLetters.add(letter)
+        usedLetters.add(letter)
     }
 }

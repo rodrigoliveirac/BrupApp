@@ -1,4 +1,4 @@
-package com.rodcollab.brupapp.ui.theme
+package com.rodcollab.brupapp.app.theme
 
 import android.app.Activity
 import android.os.Build

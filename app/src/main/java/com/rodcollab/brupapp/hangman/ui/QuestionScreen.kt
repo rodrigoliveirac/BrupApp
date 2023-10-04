@@ -27,7 +27,6 @@ import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.contentColorFor
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -58,24 +57,16 @@ val alphabet = mutableListOf(
 fun QuestionScreen(game: HangmanGame) {
 
 
+    var uiState by remember { mutableStateOf(game.getTrialState()) }
+
     var letterTapped by remember { mutableStateOf('-') }
 
-    var answer by remember { mutableStateOf(game.getTrialState().answer) }
-
-    var tries: Int by remember { mutableStateOf(game.getTrialState().tries) }
-    var chances: Int by remember { mutableStateOf(game.getTrialState().chances) }
-
-    var hits: Int by remember { mutableStateOf(game.getTrialState().hits) }
-    var wrongs: Int by remember { mutableStateOf(game.getTrialState().errors) }
-
-    var usedLetters: String by remember { mutableStateOf(game.getTrialState().usedLetters.toString()) }
-
     val score = hashMapOf(
-        "Tries: " to tries,
-        "Chances left: " to chances,
-        "Hits: " to hits,
-        "Wrongs: " to wrongs,
-        "Used letters: " to usedLetters
+        "Tries: " to uiState.tries,
+        "Chances left: " to uiState.chances,
+        "Hits: " to uiState.hits,
+        "Wrongs: " to uiState.errors,
+        "Used letters: " to uiState.usedLetters.toString()
     )
 
     var openDialogLostGame by rememberSaveable { mutableStateOf(false) }
@@ -83,13 +74,13 @@ fun QuestionScreen(game: HangmanGame) {
 
     var resetGame by remember { mutableStateOf(false) }
 
-    var chars by remember { mutableStateOf(game.getAnswerListChar()) }
+    val chars by remember { mutableStateOf(game.getAnswerListChar()) }
 
     if (game.getTrialState().chances == 0) {
         openDialogLostGame = true
     }
 
-    if (game.getTrialState().usedLetters.containsAll(game.getTrialState().chars)) {
+    if (uiState.usedLetters.containsAll(uiState.chars)) {
         LaunchedEffect(Unit) {
             delay(100)
             openDialogWinGame = true
@@ -102,26 +93,11 @@ fun QuestionScreen(game: HangmanGame) {
         delay(2L)
         letterTapped = '-'
 
-        game.getTrialState().apply {
-            tries = this.tries
-            chances = this.chances
-            hits = this.hits
-            wrongs = this.errors
-            usedLetters = this.usedLetters.toString()
-        }
-
+        uiState = game.getTrialState()
     }
 
     LaunchedEffect(resetGame) {
-        game.getTrialState().apply {
-            tries = this.tries
-            chances = this.chances
-            hits = this.hits
-            wrongs = this.errors
-            usedLetters = this.usedLetters.toString()
-            chars = this.chars
-            answer = this.answer
-        }
+        uiState = game.getTrialState()
     }
 
     val localConfig = LocalConfiguration.current
@@ -136,15 +112,21 @@ fun QuestionScreen(game: HangmanGame) {
                 .fillMaxSize()
                 .padding(it)
         ) {
-            if(localConfig.orientation == Configuration.ORIENTATION_LANDSCAPE) {
+            if (localConfig.orientation == Configuration.ORIENTATION_LANDSCAPE) {
                 Row(horizontalArrangement = Arrangement.SpaceBetween) {
                     Column(modifier = Modifier.padding(16.dp)) {
                         score.forEach { (text, value) ->
-                            Text(modifier = Modifier.padding(start = 16.dp), text = text + value.toString())
+                            Text(
+                                modifier = Modifier.padding(start = 16.dp),
+                                text = text + value.toString()
+                            )
                         }
                     }
                     Spacer(modifier = Modifier.weight(1f))
-                    Column(modifier = Modifier.padding(16.dp),horizontalAlignment = Alignment.CenterHorizontally) {
+                    Column(
+                        modifier = Modifier.padding(16.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
                         Row(
                             modifier = Modifier
                                 .align(Alignment.CenterHorizontally)
@@ -230,7 +212,10 @@ fun QuestionScreen(game: HangmanGame) {
                 ) {
 
                     score.forEach { (text, value) ->
-                        Text(modifier = Modifier.padding(start = 16.dp), text = text + value.toString())
+                        Text(
+                            modifier = Modifier.padding(start = 16.dp),
+                            text = text + value.toString()
+                        )
                     }
 
                     Row(
@@ -324,7 +309,7 @@ fun QuestionScreen(game: HangmanGame) {
                 Box(Modifier.fillMaxWidth()) {
                     Text(
                         modifier = Modifier.align(Alignment.Center),
-                        text = "The word is '${answer}'"
+                        text = "The word is '${uiState.answer}'"
                     )
                 }
             },
@@ -354,7 +339,7 @@ fun QuestionScreen(game: HangmanGame) {
                 Box(Modifier.fillMaxWidth()) {
                     Text(
                         modifier = Modifier.align(Alignment.Center),
-                        text = "The word is '${answer}'"
+                        text = "The word is '${uiState.answer}'"
                     )
                 }
             },

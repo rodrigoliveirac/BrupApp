@@ -67,10 +67,13 @@ class HangmanGameUnitTest {
         val letterExists = defaultGame.isLetterExists('l', questionStorage)
         assertEquals(false, letterExists)
 
+        val initialChances = defaultGame.chances
+
         defaultGame.updateScore(letterExists)
         assertEquals(0, defaultGame.hits)
         assertEquals(1, defaultGame.errors)
-        assertEquals(defaultGame.chances - 1, defaultGame.chances)
+
+        assertEquals(initialChances - 1, defaultGame.chances)
 
     }
 

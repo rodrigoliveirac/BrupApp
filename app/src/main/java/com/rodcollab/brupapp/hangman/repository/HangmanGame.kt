@@ -7,7 +7,7 @@ import com.rodcollab.brupapp.hangman.domain.Trial
 interface HangmanGame {
 
     fun getTrialState(): Trial
-    fun  verifyAnswerThenUpdateGameState(letter: Char)
+    fun verifyAnswerThenUpdateGameState(letter: Char)
     fun resetGame()
 }
 
@@ -18,7 +18,7 @@ class HangmanGameImpl(private val dataSet: List<String>) : HangmanGame {
 
         private var instance: HangmanGame? = null
         fun getInstance(): HangmanGame {
-            if(instance == null) {
+            if (instance == null) {
                 instance = HangmanGameImpl(oop + programming)
             }
             return instance!!
@@ -66,6 +66,7 @@ class HangmanGameImpl(private val dataSet: List<String>) : HangmanGame {
 
 
     override fun verifyAnswerThenUpdateGameState(letter: Char) {
+        addToGuessedLetters(letter)
 
         incrementTries()
 
@@ -73,20 +74,17 @@ class HangmanGameImpl(private val dataSet: List<String>) : HangmanGame {
 
         updateScore(letterExists)
 
-        addToGuessedLetters(letter)
-
     }
 
     override fun resetGame() {
-        this.apply {
-            chances = 6
-            errors = 0
-            hits = 0
-            tries = 0
-            usedLetters = mutableListOf()
-            sourceAnswer = getSourceAnswer(dataSet)
-            answer = getAnswer(sourceAnswer)
-        }
+        usedLetters.removeAll(usedLetters)
+        chances = 6
+        errors = 0
+        hits = 0
+        tries = 0
+        usedLetters = usedLetters
+        sourceAnswer = getSourceAnswer(dataSet)
+        answer = getAnswer(sourceAnswer)
     }
 
     private fun getSourceAnswer(dataSet: List<String>): List<Char> {
@@ -117,5 +115,6 @@ class HangmanGameImpl(private val dataSet: List<String>) : HangmanGame {
 
     private fun addToGuessedLetters(letter: Char) {
         usedLetters.add(letter)
+        usedLetters = usedLetters
     }
 }

@@ -1,27 +1,25 @@
 package com.rodcollab.brupapp.hangman.repository
 
+import com.rodcollab.brupapp.data.oop
+import com.rodcollab.brupapp.data.programming
 import com.rodcollab.brupapp.hangman.domain.Trial
 
 interface HangmanGame {
 
     fun getTrialState(): Trial
-
-    fun verifyAnswerThenUpdateGameState(letter: Char)
-
-    fun guessedLetters(): List<Char>
-
-    fun getAnswerListChar(): List<Char>
+    fun  verifyAnswerThenUpdateGameState(letter: Char)
     fun resetGame()
 }
 
 class HangmanGameImpl(private val dataSet: List<String>) : HangmanGame {
 
+
     companion object {
 
         private var instance: HangmanGame? = null
-        fun getInstance(dataSet: List<String>): HangmanGame {
+        fun getInstance(): HangmanGame {
             if(instance == null) {
-                instance = HangmanGameImpl(dataSet)
+                instance = HangmanGameImpl(oop + programming)
             }
             return instance!!
         }
@@ -48,7 +46,7 @@ class HangmanGameImpl(private val dataSet: List<String>) : HangmanGame {
     var answer = getAnswer(sourceAnswer)
         private set
 
-    fun getAnswer(questionStorage: List<Char>): String {
+    private fun getAnswer(questionStorage: List<Char>): String {
         var answer = ""
         questionStorage.forEach {
             answer += it.toString()
@@ -79,9 +77,6 @@ class HangmanGameImpl(private val dataSet: List<String>) : HangmanGame {
 
     }
 
-    override fun guessedLetters(): List<Char> = usedLetters
-
-    override fun getAnswerListChar(): List<Char> = sourceAnswer
     override fun resetGame() {
         this.apply {
             chances = 6

@@ -23,11 +23,9 @@ data class HangmanGameUiState(
     val finished: Boolean = win || lose
 }
 
-fun Trial.toExternal() =
-    HangmanGameUiState(chars, usedLetters, chances, tries, hits, errors, answer)
+fun Trial.toExternal() = HangmanGameUiState(chars, usedLetters, chances, tries, hits, errors, answer)
 
-abstract class SimpleViewModel()
-class HangmanGameViewModel(private val repository: HangmanGame) : SimpleViewModel() {
+class HangmanGameViewModel(private val repository: HangmanGame) {
 
     private val _uiState: MutableStateFlow<HangmanGameUiState> by lazy {
         MutableStateFlow(

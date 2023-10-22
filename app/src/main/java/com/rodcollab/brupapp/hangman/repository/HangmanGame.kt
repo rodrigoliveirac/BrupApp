@@ -3,12 +3,15 @@ package com.rodcollab.brupapp.hangman.repository
 import com.rodcollab.brupapp.data.NetworkRandomWords
 import com.rodcollab.brupapp.data.NetworkRandomWordsImpl
 import com.rodcollab.brupapp.hangman.domain.Trial
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.withContext
 
 interface HangmanGame {
-
-    fun getTrialState(): Trial
+    suspend fun prepareGame(): Trial
     fun verifyAnswerThenUpdateGameState(letter: Char)
     fun resetGame()
+    fun gameState() : Trial
 }
 
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -16,6 +19,12 @@ class HangmanGameImpl(
     private val randomWords: NetworkRandomWords,
 ) : HangmanGame {
 
+    private var dataSet = mutableListOf<String>()
+    var sourceAnswer = listOf<Char>()
+        private set
+
+    var answer = ""
+        private set
 
     companion object {
 
@@ -28,9 +37,6 @@ class HangmanGameImpl(
             return instance!!
         }
     }
-
-    var sourceAnswer = getSourceAnswer(dataSet = dataSet)
-        private set
 
     var usedLetters = mutableListOf<Char>()
         private set
@@ -52,23 +58,36 @@ class HangmanGameImpl(
     var gameOn = false
         private set
 
-    private fun getAnswer(questionStorage: List<Char>): String {
+    private fun getAnswer(questionStorage: List<Char>, answerCreated: (String) -> Unit) {
         var answer = ""
         questionStorage.forEach {
             answer += it.toString()
         }
-        return answer
+        answerCreated(answer)
     }
 
-    override fun getTrialState(): Trial = Trial(
-        chars = sourceAnswer,
-        chances = chances,
-        tries = tries,
-        hits = hits,
-        errors = errors,
-        answer = answer,
-        usedLetters = usedLetters
-    )
+    override suspend fun prepareGame(): Trial {
+
+        dataSet = withContext(Dispatchers.IO) { randomWords.randomWords().map { word -> word.word }.toMutableList() }
+        getSourceAnswer(dataSet) { sourceAnswerCreated ->
+            sourceAnswer = sourceAnswerCreated
+        }
+        getAnswer(sourceAnswer) { answerCreated ->
+            answer = answerCreated
+        }
+
+        return Trial(
+            gameOn = gameOn,
+            gameOver = gameOver,
+            chars = sourceAnswer,
+            chances = chances,
+            tries = tries,
+            hits = hits,
+            errors = errors,
+            answer = answer,
+            usedLetters = usedLetters
+        )
+    }
 
 
     override fun verifyAnswerThenUpdateGameState(letter: Char) {
@@ -94,17 +113,37 @@ class HangmanGameImpl(
         hits = 0
         tries = 0
         usedLetters = usedLetters
-        sourceAnswer = getSourceAnswer(dataSet)
-        answer = getAnswer(sourceAnswer)
+        getSourceAnswer(dataSet) {
+            sourceAnswer = it
+        }
+        getAnswer(sourceAnswer) {
+            answer = it
+        }
     }
 
-    private fun getSourceAnswer(dataSet: List<String>): List<Char> {
-        val random = dataSet.random()
+    override fun gameState(): Trial {
+
+        return Trial(
+            gameOn = gameOn,
+            gameOver = gameOver,
+            chars = sourceAnswer,
+            chances = chances,
+            tries = tries,
+            hits = hits,
+            errors = errors,
+            answer = answer,
+            usedLetters = usedLetters
+        )
+    }
+
+    private fun getSourceAnswer(data: List<String>, sourceAnswer: (List<Char>) -> Unit) {
+        val random = data.random()
+        dataSet.remove(random)
         val answer = mutableListOf<Char>()
         random.forEach {
             answer.add(it)
         }
-        return answer
+        sourceAnswer(answer)
     }
 
     private fun incrementTries() {

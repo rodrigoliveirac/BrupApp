@@ -1,7 +1,7 @@
 package com.rodcollab.brupapp.hangman.repository
 
-import com.rodcollab.brupapp.data.oop
-import com.rodcollab.brupapp.data.programming
+import com.rodcollab.brupapp.data.NetworkRandomWords
+import com.rodcollab.brupapp.data.NetworkRandomWordsImpl
 import com.rodcollab.brupapp.hangman.domain.Trial
 
 interface HangmanGame {
@@ -11,7 +11,10 @@ interface HangmanGame {
     fun resetGame()
 }
 
-class HangmanGameImpl(private val dataSet: List<String>) : HangmanGame {
+@OptIn(ExperimentalCoroutinesApi::class)
+class HangmanGameImpl(
+    private val randomWords: NetworkRandomWords,
+) : HangmanGame {
 
 
     companion object {
@@ -19,7 +22,8 @@ class HangmanGameImpl(private val dataSet: List<String>) : HangmanGame {
         private var instance: HangmanGame? = null
         fun getInstance(): HangmanGame {
             if (instance == null) {
-                instance = HangmanGameImpl(oop + programming)
+                instance =
+                    HangmanGameImpl(randomWords = NetworkRandomWordsImpl.getInstance())
             }
             return instance!!
         }

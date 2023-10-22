@@ -8,58 +8,61 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import com.rodcollab.brupapp.hangman.ui.LetterModel
 
 @Composable
 fun CustomKeyboardButton(
-    char: Char,
-    letterTapped: Char,
-    usedLetters: List<Char>,
-    onTapped: (Char) -> Unit
+    letterModel: LetterModel,
+    verifyAnswer: (Char) -> Unit
 ) {
+    val elevationCard = elevationCard(letterModel.isSelected)
+    var currentLetterTapped by remember { mutableStateOf('-') }
+    LaunchedEffect(currentLetterTapped) { currentLetterTapped = '-' }
+
     Card(
         colors = CardDefaults.cardColors(Color(255, 255, 255, 255)),
         shape = RoundedCornerShape(12.dp),
-        border = BorderStroke(
-            2.dp, Color(
-                250,
-                128,
-                46
-            )
-        ),
+        border = BorderStroke(2.dp, Color(250, 128, 46)),
         modifier = Modifier
             .graphicsLayer {
-                scaleX =
-                    if (char == letterTapped) 1.2f else 1.0f
-                scaleY =
-                    if (char == letterTapped) 1.2f else 1.0f
+                scaleX = if (currentLetterTapped == letterModel.char) 1.2f else 1.0f
+                scaleY = if (currentLetterTapped == letterModel.char) 1.2f else 1.0f
+                alpha = if (currentLetterTapped != letterModel.char && letterModel.isSelected) 0.5f else 1.0f
             }
-            .pointerInput(Unit) {
-                detectTapGestures(
-                    onPress = {
-
-                        val letterGuessed = usedLetters
-                            .any { l -> char == l }
-
-                        if (!letterGuessed) {
-                            onTapped(char)
+            .pointerInput(letterModel) {
+                if (letterModel.isEnabled) {
+                    detectTapGestures(
+                        onPress = {
+                            verifyAnswer(letterModel.char)
+                            currentLetterTapped = letterModel.char
                         }
-
-                    }
-                )
+                    )
+                }
             }
             .padding(4.dp),
-        elevation = CardDefaults.cardElevation(4.dp)
+        elevation = CardDefaults.cardElevation(elevationCard)
     ) {
         Text(
-            text = char.toString(),
+            text = letterModel.char.toString(),
             maxLines = 1,
             modifier = Modifier
                 .padding(12.dp)
         )
     }
+}
+
+@Composable
+fun elevationCard(isAlreadyUsed: Boolean): Dp {
+    return if (isAlreadyUsed) 0.dp else 4.dp
 }

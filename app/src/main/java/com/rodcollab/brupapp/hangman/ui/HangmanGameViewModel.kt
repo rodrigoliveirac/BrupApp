@@ -5,9 +5,12 @@ import com.rodcollab.brupapp.hangman.domain.Trial
 import com.rodcollab.brupapp.hangman.repository.HangmanGame
 import com.rodcollab.brupapp.hangman.repository.HangmanGameImpl
 import com.rodcollab.brupapp.util.initializer
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
 
 data class HangmanGameUiState(
     val isLoading: Boolean = false,
@@ -20,15 +23,31 @@ data class HangmanGameUiState(
     val hits: Int = 0,
     val errors: Int = 0,
     val answer: String = "",
-) {
-    val win: Boolean = usedLetters.containsAll(chars)
-    val lose: Boolean = chances == 0
-    val finished: Boolean = win || lose
-}
+    val letterOptions: List<LetterModel> = listOf()
+)
 
-fun Trial.toExternal() = HangmanGameUiState(chars, usedLetters, chances, tries, hits, errors, answer)
+data class LetterModel(
+    val char: Char,
+    val isEnabled: Boolean,
+    val isSelected: Boolean
+)
 
-class HangmanGameViewModel(private val repository: HangmanGame) {
+fun Trial.toExternal(options: List<LetterModel>) =
+    HangmanGameUiState(
+        isLoading = false,
+        gameOn,
+        gameOver,
+        chars,
+        usedLetters,
+        chances,
+        tries,
+        hits,
+        errors,
+        answer,
+        letterOptions = options
+    )
+
+class HangmanGameViewModel(private val repository: HangmanGame) : CoroutineScope by MainScope() {
 
     private val _uiState: MutableStateFlow<HangmanGameUiState> by lazy {
         MutableStateFlow(
@@ -37,23 +56,48 @@ class HangmanGameViewModel(private val repository: HangmanGame) {
     }
     val uiState = _uiState.asStateFlow()
 
+    private val letters = alphabet()
+
+    private fun alphabet() = alphabet.map { char ->
+            LetterModel(
+                char = char,
+                isEnabled = true,
+                isSelected = false
+            )
+        }.toMutableList()
+
+
     init {
-        _uiState.update {
-            repository.getTrialState().toExternal()
+        launch {
+            _uiState.update {
+                repository.prepareGame().toExternal(options = letters)
+            }
         }
     }
 
     fun verifyAnswerThenUpdateGameState(char: Char) {
+
         repository.verifyAnswerThenUpdateGameState(char)
+
+        val updatedLetters = updateLettersUiModel(char)
+
         _uiState.update {
-            repository.getTrialState().toExternal()
+            repository.gameState().toExternal(updatedLetters)
+        }
+    }
+
+    private fun updateLettersUiModel(char: Char) = letters.map {
+        if (it.char == char) {
+            it.copy(isSelected = true, isEnabled = false)
+        } else {
+            it.copy()
         }
     }
 
     fun resetGame() {
         repository.resetGame()
         _uiState.update {
-            repository.getTrialState().toExternal()
+            repository.gameState().toExternal(it.letterOptions)
         }
     }
 
@@ -65,4 +109,4 @@ class HangmanGameViewModel(private val repository: HangmanGame) {
 }
 
 @Composable
-fun <T> viewModel(factory: T) : T = factory
+fun <T> viewModel(factory: T): T = factory

@@ -19,22 +19,32 @@ import androidx.compose.ui.unit.sp
 
 @Composable
 fun LetterItem(letter: String, letterGuessed: Boolean) {
+
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         modifier = Modifier.wrapContentSize()
     ) {
+        val isLetter = alreadyUsed(letter.first())
         Text(
             modifier = Modifier
                 .padding(bottom = 8.dp)
                 .graphicsLayer {
-                    alpha = if (letterGuessed) 1f else 0f
+                    alpha = if (letterGuessed || !isLetter) 1f else 0f
                 }, text = letter.uppercase(), fontSize = 16.sp, fontWeight = FontWeight.ExtraBold
         )
-        Spacer(
-            modifier = Modifier
-                .height(2.dp)
-                .width(12.dp)
-                .background(Color.LightGray)
-        )
+        if(isLetter) {
+            Spacer(
+                modifier = Modifier
+                    .height(2.dp)
+                    .width(12.dp)
+                    .background(Color.LightGray)
+            )
+        }
     }
+}
+
+@Composable
+fun alreadyUsed(c: Char) : Boolean = when (c) {
+    in 'a'..'z', in 'A'..'Z' -> true
+    else -> false
 }

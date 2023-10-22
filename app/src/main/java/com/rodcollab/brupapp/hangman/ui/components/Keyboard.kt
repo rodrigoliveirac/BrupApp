@@ -5,17 +5,13 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import com.rodcollab.brupapp.hangman.ui.alphabet
+import com.rodcollab.brupapp.hangman.ui.LetterModel
 
 @Composable
 fun KeyBoard(
     modifier: Modifier = Modifier,
     onTapped: (Char) -> Unit,
-    usedLetters: List<Char>,
-    letterTapped: Char,
+    letters: List<LetterModel>
 ) {
-
-    val chunks = alphabet.chunked(8)
-
-    ChunksKeyboard(modifier = modifier.padding(start = 16.dp).fillMaxWidth(), chunks, letterTapped, usedLetters, onTapped)
+    ChunksKeyboard(modifier = modifier.padding(start = 16.dp).fillMaxWidth(), letters, onTapped)
 }

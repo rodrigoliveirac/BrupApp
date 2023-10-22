@@ -1,25 +1,39 @@
 package com.rodcollab.brupapp.hangman.ui.components
 
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.RowScope
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import com.rodcollab.brupapp.hangman.ui.LetterModel
 
 @Composable
 fun ChunksKeyboard(
     modifier: Modifier,
-    chunks: List<List<Char>>,
-    letterTapped: Char,
-    usedLetters: List<Char>,
-    onTapped: (Char) -> Unit
+    letters: List<LetterModel>,
+    verifyAnswer: (Char) -> Unit
 ) {
-    chunks.forEach { chars ->
-        Row(
-            modifier = modifier,
-        ) {
-            chars.forEach { char ->
-                CustomKeyboardButton(char, letterTapped, usedLetters, onTapped)
-            }
+    Chunks(
+        modifier = modifier,
+        letters = letters
+    ) { chars ->
+        chars.forEach { letter ->
+            CustomKeyboardButton(
+                letter,
+                verifyAnswer
+            )
         }
     }
+}
 
+@Composable
+fun Chunks(
+    modifier: Modifier,
+    letters: List<LetterModel>,
+    content: @Composable RowScope.(List<LetterModel>) -> Unit
+) {
+    letters.chunked(8).forEach {
+        Row(modifier = modifier) {
+            content(it)
+        }
+    }
 }

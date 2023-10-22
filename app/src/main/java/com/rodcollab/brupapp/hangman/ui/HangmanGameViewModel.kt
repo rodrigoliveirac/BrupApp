@@ -56,7 +56,7 @@ class HangmanGameViewModel(private val repository: HangmanGame) : CoroutineScope
     }
     val uiState = _uiState.asStateFlow()
 
-    private val letters = alphabet()
+    private var letters = alphabet()
 
     private fun alphabet() = alphabet.map { char ->
             LetterModel(
@@ -86,12 +86,15 @@ class HangmanGameViewModel(private val repository: HangmanGame) : CoroutineScope
         }
     }
 
-    private fun updateLettersUiModel(char: Char) = letters.map {
-        if (it.char == char) {
-            it.copy(isSelected = true, isEnabled = false)
-        } else {
-            it.copy()
-        }
+    private fun updateLettersUiModel(char: Char) : List<LetterModel> {
+        letters = letters.map {
+            if (it.char == char) {
+                it.copy(isSelected = true, isEnabled = false)
+            } else {
+                it.copy()
+            }
+        }.toMutableList()
+        return letters
     }
 
     fun resetGame() {

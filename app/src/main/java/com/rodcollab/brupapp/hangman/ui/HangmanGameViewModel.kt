@@ -10,6 +10,9 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 
 data class HangmanGameUiState(
+    val isLoading: Boolean = false,
+    val gameOn: Boolean = false,
+    val gameOver: Boolean = false,
     val chars: List<Char> = listOf(),
     val usedLetters: List<Char> = listOf(),
     val chances: Int = 0,

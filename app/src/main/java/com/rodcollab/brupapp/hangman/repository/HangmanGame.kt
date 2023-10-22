@@ -47,7 +47,9 @@ class HangmanGameImpl(
     var chances = 6
         private set
 
-    var answer = getAnswer(sourceAnswer)
+    var gameOver = false
+        private set
+    var gameOn = false
         private set
 
     private fun getAnswer(questionStorage: List<Char>): String {
@@ -76,12 +78,17 @@ class HangmanGameImpl(
 
         val letterExists = isLetterExists(letter, sourceAnswer)
 
+        gameOn = usedLetters.containsAll(sourceAnswer)
+        gameOver = chances == 1
+
         updateScore(letterExists)
 
     }
 
     override fun resetGame() {
         usedLetters.removeAll(usedLetters)
+        gameOn = false
+        gameOver = false
         chances = 6
         errors = 0
         hits = 0

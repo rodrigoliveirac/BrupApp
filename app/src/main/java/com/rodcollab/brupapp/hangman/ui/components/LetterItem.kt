@@ -16,23 +16,23 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.rodcollab.brupapp.hangman.ui.CharItem
 
 @Composable
-fun LetterItem(letter: String, letterGuessed: Boolean) {
+fun LetterItem(item: CharItem) {
 
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         modifier = Modifier.wrapContentSize()
     ) {
-        val isLetter = alreadyUsed(letter.first())
         Text(
             modifier = Modifier
                 .padding(bottom = 8.dp)
                 .graphicsLayer {
-                    alpha = if (letterGuessed || !isLetter) 1f else 0f
-                }, text = letter.uppercase(), fontSize = 16.sp, fontWeight = FontWeight.ExtraBold
+                    alpha = if (item.guessed || !item.isLetter) 1f else 0f
+                }, text = item.char, fontSize = 16.sp, fontWeight = FontWeight.ExtraBold
         )
-        if(isLetter) {
+        if (item.isLetter) {
             Spacer(
                 modifier = Modifier
                     .height(2.dp)
@@ -41,10 +41,4 @@ fun LetterItem(letter: String, letterGuessed: Boolean) {
             )
         }
     }
-}
-
-@Composable
-fun alreadyUsed(c: Char) : Boolean = when (c) {
-    in 'a'..'z', in 'A'..'Z' -> true
-    else -> false
 }

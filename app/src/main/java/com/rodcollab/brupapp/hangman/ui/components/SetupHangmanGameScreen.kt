@@ -21,18 +21,10 @@ fun SetupHangmanGameScreen(uiState: HangmanGameUiState, verifyAnswerThenUpdateGa
 
     val localConfig = LocalConfiguration.current
 
-    val score = hashMapOf<String, Any>(
-        "Tries: " to uiState.tries,
-        "Chances left: " to uiState.chances,
-        "Hits: " to uiState.hits,
-        "Wrongs: " to uiState.errors,
-        "Used letters: " to uiState.usedLetters.toString()
-    )
-
     if (localConfig.orientation == Configuration.ORIENTATION_LANDSCAPE) {
         Row(horizontalArrangement = Arrangement.SpaceBetween) {
 
-            ScoreHeader(Modifier, score = score)
+            ScoreHeader(Modifier, score = uiState.score)
 
             Spacer(modifier = Modifier.weight(1f))
             Column(
@@ -42,7 +34,6 @@ fun SetupHangmanGameScreen(uiState: HangmanGameUiState, verifyAnswerThenUpdateGa
                 FilledWord(
                     modifier = Modifier.filledWord(),
                     chars = uiState.chars,
-                    usedLetters = uiState.usedLetters
                 )
 
                 Spacer(modifier = Modifier.height(16.dp))
@@ -56,11 +47,10 @@ fun SetupHangmanGameScreen(uiState: HangmanGameUiState, verifyAnswerThenUpdateGa
                 .sizeIn(),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            ScoreHeader(Modifier.align(Alignment.Start), score = score)
+            ScoreHeader(Modifier.align(Alignment.Start), score = uiState.score)
             FilledWord(
                 modifier = Modifier.filledWord(),
                 chars = uiState.chars,
-                usedLetters = uiState.usedLetters
             )
             Spacer(modifier = Modifier.height(16.dp))
             KeyBoard(onTapped = verifyAnswerThenUpdateGameState, letters = uiState.letterOptions)

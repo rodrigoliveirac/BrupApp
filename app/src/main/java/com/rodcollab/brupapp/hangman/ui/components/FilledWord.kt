@@ -7,16 +7,16 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import com.rodcollab.brupapp.hangman.ui.CharItem
 
 @Composable
-fun FilledWord(modifier: Modifier, chars: List<Char>, usedLetters: List<Char>) {
+fun FilledWord(modifier: Modifier, chars: List<CharItem>) {
     Row(
         modifier = modifier,
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
         chars.forEach { char ->
-            val letterGuessed = usedLetters.any { l -> char == l }
-            LetterItem(char.toString(), letterGuessed)
+            LetterItem(char)
             Spacer(modifier = Modifier.size(8.dp))
         }
     }

@@ -4,17 +4,14 @@ import com.rodcollab.brupapp.data.NetworkRandomWords
 import com.rodcollab.brupapp.data.NetworkRandomWordsImpl
 import com.rodcollab.brupapp.hangman.domain.Trial
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.withContext
 
 interface HangmanGame {
     suspend fun prepareGame(): Trial
     fun verifyAnswerThenUpdateGameState(letter: Char)
     fun resetGame()
-    fun gameState() : Trial
+    fun gameState(): Trial
 }
-
-@OptIn(ExperimentalCoroutinesApi::class)
 class HangmanGameImpl(
     private val randomWords: NetworkRandomWords,
 ) : HangmanGame {
@@ -68,7 +65,9 @@ class HangmanGameImpl(
 
     override suspend fun prepareGame(): Trial {
 
-        dataSet = withContext(Dispatchers.IO) { randomWords.randomWords().map { word -> word.word }.toMutableList() }
+        dataSet = withContext(Dispatchers.IO) {
+            randomWords.randomWords().map { word -> word.word }.toMutableList()
+        }
         getSourceAnswer(dataSet) { sourceAnswerCreated ->
             sourceAnswer = sourceAnswerCreated
         }
@@ -140,8 +139,8 @@ class HangmanGameImpl(
         val random = data.random()
         dataSet.remove(random)
         val answer = mutableListOf<Char>()
-        random.forEach {
-            answer.add(it)
+        random.forEach { char ->
+            answer.add(char)
         }
         sourceAnswer(answer)
     }

@@ -16,7 +16,7 @@ abstract class WordnikConnection {
     private var instance: Retrofit? = null
 
     protected val service: WordnikService by lazy {
-        retrofit("https://api.wordnik.com/v4/words.json/").create(
+        retrofit("https://api.wordnik.com/v4/").create(
             WordnikService::class.java
         )
     }

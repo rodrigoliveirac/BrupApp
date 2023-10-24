@@ -10,4 +10,5 @@ data class Trial(
     val hits: Int = 0,
     val errors: Int = 0,
     val answer: String = "",
+    val tip: String = "",
 )

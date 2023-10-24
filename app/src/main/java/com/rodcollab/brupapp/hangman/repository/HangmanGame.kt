@@ -12,15 +12,24 @@ interface HangmanGame {
     fun resetGame()
     fun gameState(): Trial
 }
+
+data class WordAnswer(
+    val value: String = "",
+    val definition: String = ""
+)
+
 class HangmanGameImpl(
     private val randomWords: NetworkRandomWords,
 ) : HangmanGame {
 
-    private var dataSet = mutableListOf<String>()
+    private var dataSet = mutableListOf<WordAnswer>()
     var sourceAnswer = listOf<Char>()
         private set
 
     var answer = ""
+        private set
+
+    var tip = ""
         private set
 
     companion object {
@@ -55,24 +64,64 @@ class HangmanGameImpl(
     var gameOn = false
         private set
 
-    private fun getAnswer(questionStorage: List<Char>, answerCreated: (String) -> Unit) {
-        var answer = ""
-        questionStorage.forEach {
-            answer += it.toString()
-        }
-        answerCreated(answer)
-    }
-
     override suspend fun prepareGame(): Trial {
 
         dataSet = withContext(Dispatchers.IO) {
-            randomWords.randomWords().map { word -> word.word }.toMutableList()
+            randomWords.randomWords().map { word -> word.word }.map { word ->
+                //TODO("Need to review")
+                val definition = randomWords.definition(word)
+                var result = ""
+                if (definition == null) {
+                    val wordCapitalized = word.replaceFirstChar { it.uppercase() }
+                    val definitionUsingWordCapitalized = randomWords.definition(wordCapitalized)
+                    definitionUsingWordCapitalized?.let { response ->
+                        result = if (response.isNotEmpty()) {
+                            var text = response.first().text.toString()
+                            if (text.contains("<xref>")) {
+                                val newText = text.split("<xref>").toMutableList()
+                                text = newText.first()
+                                newText.remove(newText.first())
+                                newText.map {
+                                    val nText = it.split("</xref>").toMutableList()
+                                    text += nText.first() + nText.last()
+                                }
+                                text
+                            } else if (text.contains("<em>")) {
+                                text
+                            } else {
+                                text
+                            }
+                        } else {
+                            result
+                        }
+                    }
+                } else {
+                    result = if (definition.isNotEmpty()) {
+                        var text = definition.first().text.toString()
+                        if (text.contains("<xref>")) {
+                            val newText = text.split("<xref>").toMutableList()
+                            text = newText.first()
+                            newText.remove(newText.first())
+                            newText.map {
+                                val nText = it.split("</xref>").toMutableList()
+                                text += nText.first() + nText.last()
+                            }
+                            text
+                        } else if (text.contains("<em>")) {
+                            text
+                        } else {
+                            text
+                        }
+                    } else {
+                        result
+                    }
+                }
+                WordAnswer(value = word, definition = result)
+            }.toMutableList()
         }
+
         getSourceAnswer(dataSet) { sourceAnswerCreated ->
             sourceAnswer = sourceAnswerCreated
-        }
-        getAnswer(sourceAnswer) { answerCreated ->
-            answer = answerCreated
         }
 
         return Trial(
@@ -84,7 +133,8 @@ class HangmanGameImpl(
             hits = hits,
             errors = errors,
             answer = answer,
-            usedLetters = usedLetters
+            usedLetters = usedLetters,
+            tip = tip
         )
     }
 
@@ -97,9 +147,6 @@ class HangmanGameImpl(
         gameOn = usedLetters.containsAll(sourceAnswer)
 
         val letterExists = isLetterExists(letter, sourceAnswer)
-
-        gameOn = usedLetters.containsAll(sourceAnswer)
-        gameOver = chances == 1
 
         updateScore(letterExists)
 
@@ -117,9 +164,6 @@ class HangmanGameImpl(
         getSourceAnswer(dataSet) {
             sourceAnswer = it
         }
-        getAnswer(sourceAnswer) {
-            answer = it
-        }
     }
 
     override fun gameState(): Trial {
@@ -133,15 +177,21 @@ class HangmanGameImpl(
             hits = hits,
             errors = errors,
             answer = answer,
-            usedLetters = usedLetters
+            usedLetters = usedLetters,
+            tip = tip
         )
     }
 
-    private fun getSourceAnswer(data: List<String>, sourceAnswer: (List<Char>) -> Unit) {
+    private fun getSourceAnswer(
+        data: List<WordAnswer>,
+        sourceAnswer: (List<Char>) -> Unit
+    ) {
         val random = data.random()
         dataSet.remove(random)
+        answer = random.value
+        tip = random.definition
         val answer = mutableListOf<Char>()
-        random.forEach { char ->
+        random.value.forEach { char ->
             answer.add(char)
         }
         sourceAnswer(answer)

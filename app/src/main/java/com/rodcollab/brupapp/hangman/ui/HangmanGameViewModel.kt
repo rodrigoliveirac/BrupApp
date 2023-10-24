@@ -31,7 +31,8 @@ fun Trial.toExternal(options: List<LetterModel>) =
         hits,
         errors,
         answer,
-        letterOptions = options
+        letterOptions = options,
+        tip
     )
 
 class HangmanGameViewModel(private val repository: HangmanGame) : CoroutineScope by MainScope() {

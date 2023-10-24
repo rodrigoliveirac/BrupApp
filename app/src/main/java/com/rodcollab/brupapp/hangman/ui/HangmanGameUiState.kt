@@ -12,5 +12,6 @@ data class HangmanGameUiState(
     val hits: Int = 0,
     val errors: Int = 0,
     val answer: String = "",
-    val letterOptions: List<LetterModel> = listOf()
+    val letterOptions: List<LetterModel> = listOf(),
+    val tip: String = ""
 )

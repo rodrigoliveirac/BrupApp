@@ -94,6 +94,8 @@ class HangmanGameImpl(
 
         incrementTries()
 
+        gameOn = usedLetters.containsAll(sourceAnswer)
+
         val letterExists = isLetterExists(letter, sourceAnswer)
 
         gameOn = usedLetters.containsAll(sourceAnswer)
@@ -159,6 +161,7 @@ class HangmanGameImpl(
         } else {
             errors += 1
             chances -= 1
+            gameOver = chances == 0
         }
     }
 

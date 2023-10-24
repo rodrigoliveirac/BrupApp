@@ -23,9 +23,9 @@ fun GameFinishedDialog(
     var title by remember { mutableStateOf("") }
 
     if (uiState.gameOver) title = "You lost! :(" else if (uiState.gameOn) title = "Congrats! :)"
-    if(uiState.chars.isEmpty()) title = "Preparing the game"
+    if (uiState.isLoading) title = "Preparing the game"
 
-    if (uiState.gameOn || uiState.gameOver || uiState.chars.isEmpty()) {
+    if (uiState.gameOn || uiState.gameOver || uiState.isLoading) {
         AlertDialog(
             title = {
                 Box(Modifier.fillMaxWidth()) {
@@ -34,7 +34,7 @@ fun GameFinishedDialog(
             },
             text = {
                 Box(Modifier.fillMaxWidth()) {
-                    if(uiState.chars.isEmpty()) {
+                    if (uiState.isLoading) {
                         CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
                     } else {
                         Text(
@@ -46,7 +46,7 @@ fun GameFinishedDialog(
             },
             onDismissRequest = { /*TODO*/ },
             confirmButton = {
-                if(uiState.chars.isNotEmpty()) {
+                if (!uiState.isLoading) {
                     Box(Modifier.fillMaxWidth()) {
                         Button(modifier = Modifier.align(Alignment.Center), onClick = {
                             resetGame()

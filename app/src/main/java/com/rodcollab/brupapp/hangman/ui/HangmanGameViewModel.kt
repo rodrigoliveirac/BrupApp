@@ -14,6 +14,7 @@ import kotlinx.coroutines.launch
 
 fun Trial.toExternal(options: List<LetterModel>) =
     HangmanGameUiState(
+        isLoading = false,
         score = hashMapOf(
             "Tries: " to tries,
             "Chances left: " to chances,
@@ -21,15 +22,9 @@ fun Trial.toExternal(options: List<LetterModel>) =
             "Wrongs: " to errors,
             "Used letters: " to usedLetters.toString()
         ),
-        isLoading = false,
         gameOn,
         gameOver,
         chars.toCharItem(usedLetters),
-        usedLetters,
-        chances,
-        tries,
-        hits,
-        errors,
         answer,
         letterOptions = options,
         tip
@@ -38,15 +33,11 @@ fun Trial.toExternal(options: List<LetterModel>) =
 class HangmanGameViewModel(private val repository: HangmanGame) : CoroutineScope by MainScope() {
 
     private val _uiState: MutableStateFlow<HangmanGameUiState> by lazy {
-        MutableStateFlow(
-            HangmanGameUiState()
-        )
+        MutableStateFlow(HangmanGameUiState(isLoading = true))
     }
     val uiState = _uiState.asStateFlow()
 
-    private var letters = alphabet()
-
-    private fun alphabet() = alphabet.map { char ->
+    private var letters = alphabet.map { char ->
         LetterModel(
             char = char,
             isEnabled = true,
@@ -56,9 +47,8 @@ class HangmanGameViewModel(private val repository: HangmanGame) : CoroutineScope
 
     init {
         launch {
-            _uiState.update {
-                repository.prepareGame().toExternal(options = letters)
-            }
+            val state = repository.prepareGame().toExternal(options = letters)
+            _uiState.update { state }
         }
     }
 

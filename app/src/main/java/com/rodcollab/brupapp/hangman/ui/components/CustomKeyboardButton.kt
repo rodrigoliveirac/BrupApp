@@ -41,14 +41,14 @@ fun CustomKeyboardButton(
                 alpha = if (currentLetterTapped != letterModel.char && letterModel.isSelected) 0.5f else 1.0f
             }
             .pointerInput(letterModel) {
-                if (letterModel.isEnabled) {
-                    detectTapGestures(
-                        onPress = {
-                            verifyAnswer(letterModel.char)
+                detectTapGestures(
+                    onPress = {
+                        if (letterModel.isEnabled) {
                             currentLetterTapped = letterModel.char
+                            verifyAnswer(letterModel.char)
                         }
-                    )
-                }
+                    }
+                )
             }
             .padding(4.dp),
         elevation = CardDefaults.cardElevation(elevationCard)

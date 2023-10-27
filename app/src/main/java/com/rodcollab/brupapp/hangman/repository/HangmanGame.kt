@@ -114,6 +114,13 @@ class HangmanGameImpl(
                             }
                             text
                         } else if (text.contains("<em>")) {
+                            val newText = text.split("<em>").toMutableList()
+                            text = newText.first()
+                            newText.remove(newText.first())
+                            newText.map {
+                                val nText = it.split("</em>").toMutableList()
+                                text += nText.first() + nText.last()
+                            }
                             text
                         } else {
                             text
@@ -131,7 +138,7 @@ class HangmanGameImpl(
         rightAnswers = dataSet.size
 
         getSourceAnswer(dataSet) { sourceAnswerCreated ->
-            sourceAnswer = sourceAnswerCreated
+            sourceAnswer = sourceAnswerCreated.map { it.lowercase().first() }
         }
     }
 
@@ -142,7 +149,8 @@ class HangmanGameImpl(
 
         incrementTries()
 
-        gameOn = usedLetters.containsAll(sourceAnswer)
+        val letters = sourceAnswer.filter { char -> char.isLetter() }
+        gameOn = usedLetters.containsAll(letters)
 
         val letterExists = isLetterExists(letter, sourceAnswer)
 
@@ -155,7 +163,6 @@ class HangmanGameImpl(
         if (dataSet.isEmpty() && gameOver || gameOn && dataSet.isEmpty()) {
             gameIsFinish = true
         }
-
 
     }
 
@@ -171,9 +178,12 @@ class HangmanGameImpl(
 
         if (gameIsFinish) {
             prepareGame()
+            gameIsFinish = false
         } else {
             getSourceAnswer(dataSet) {
-                sourceAnswer = it
+                sourceAnswer = it.map {char ->
+                    char.lowercase().first()
+                }
             }
         }
     }
@@ -232,5 +242,10 @@ class HangmanGameImpl(
     private fun addToGuessedLetters(letter: Char) {
         usedLetters.add(letter)
         usedLetters = usedLetters
+    }
+
+    private fun isLetter(c: Char): Boolean = when (c) {
+        in 'a'..'z', in 'A'..'Z' -> true
+        else -> false
     }
 }

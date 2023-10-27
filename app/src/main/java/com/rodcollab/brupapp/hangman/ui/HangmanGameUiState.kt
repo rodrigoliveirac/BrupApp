@@ -11,5 +11,6 @@ data class HangmanGameUiState(
     val tip: String = "",
     val gameIsFinish: Boolean = false,
     val newGame: Boolean = false,
-    val performance: Pair<Float, String> = Pair(first = 0.0f, second = "0%")
+    val performance: Pair<Float, String> = Pair(first = 0.0f, second = "0%"),
+    val displayPerformance: Boolean = false
 )

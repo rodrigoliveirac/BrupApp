@@ -28,7 +28,7 @@ fun ScreenHost(gameViewModel: HangmanGameViewModel = viewModel(factory = Hangman
 
     val uiState by gameViewModel.uiState.collectAsState()
 
-    GameFinishedDialog(uiState = uiState, resetGame = { gameViewModel.resetGame() })
+    GameFinishedDialog(uiState = uiState, resetGame = { intent -> gameViewModel.moveForward(intent) })
 
     Scaffold(topBar = {
         CenterAlignedTopAppBar(modifier = Modifier.shadow(6.dp), title = {

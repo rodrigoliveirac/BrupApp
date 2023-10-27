@@ -6,11 +6,13 @@ import com.rodcollab.brupapp.hangman.repository.HangmanGame
 import com.rodcollab.brupapp.hangman.repository.HangmanGameImpl
 import com.rodcollab.brupapp.util.initializer
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 fun Trial.toExternal(options: List<LetterModel>) =
     HangmanGameUiState(
@@ -30,7 +32,8 @@ fun Trial.toExternal(options: List<LetterModel>) =
         tip,
         gameIsFinish,
         newGame,
-        Pair(performance, "${(performance * 100).toInt()}%")
+        Pair(performance, "${(performance * 100).toInt()}%"),
+        displayPerformance = gameIsFinish
     )
 
 class HangmanGameViewModel(private val repository: HangmanGame) : CoroutineScope by MainScope() {
@@ -67,11 +70,34 @@ class HangmanGameViewModel(private val repository: HangmanGame) : CoroutineScope
         }
     }
 
-    fun resetGame() {
+    fun moveForward(intent: String) {
+        when (intent) {
+            "RESTART" -> {
+                restartGame()
+            }
+            "NEXT" -> {
+                nextWord()
+            }
+        }
+    }
+
+    private fun nextWord() {
         launch {
             repository.resetGame()
+            updateLettersUiModel(GameStatus.RESET)
             _uiState.update {
-                it.copy(isLoading = true)
+                repository.gameState().toExternal(options = letters)
+            }
+        }
+    }
+
+    private fun restartGame() {
+        launch {
+            _uiState.update {
+                it.copy(isLoading = true, displayPerformance = false)
+            }
+            withContext(Dispatchers.IO) {
+                repository.resetGame()
             }
             updateLettersUiModel(GameStatus.RESET)
             _uiState.update {

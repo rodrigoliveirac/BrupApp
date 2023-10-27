@@ -1,7 +1,10 @@
 package com.rodcollab.brupapp.hangman.ui.components
 
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
@@ -10,9 +13,11 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
 import com.rodcollab.brupapp.hangman.ui.HangmanGameUiState
 
 @Composable
@@ -21,9 +26,11 @@ fun GameFinishedDialog(
     resetGame: () -> Unit
 ) {
     var title by remember { mutableStateOf("") }
+    var displayPerformance by rememberSaveable { mutableStateOf(false) }
 
     if (uiState.gameOver) title = "You lost! :(" else if (uiState.gameOn) title = "Congrats! :)"
     if (uiState.isLoading) title = "Preparing the game"
+    if(displayPerformance) title = "Your Performance was"
 
     if (uiState.gameOn || uiState.gameOver || uiState.isLoading) {
         AlertDialog(
@@ -36,6 +43,11 @@ fun GameFinishedDialog(
                 Box(Modifier.fillMaxWidth()) {
                     if (uiState.isLoading) {
                         CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
+                    } else if (displayPerformance) {
+                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                            Text(text = uiState.performance.second)
+                            CircularProgressIndicator(progress = uiState.performance.first)
+                        }
                     } else {
                         Text(
                             modifier = Modifier.align(Alignment.Center),
@@ -48,11 +60,31 @@ fun GameFinishedDialog(
             confirmButton = {
                 if (!uiState.isLoading) {
                     Box(Modifier.fillMaxWidth()) {
-                        Button(modifier = Modifier.align(Alignment.Center), onClick = {
-                            resetGame()
-                        }) {
-                            Text(text = "Try another word")
+                        if (uiState.gameIsFinish) {
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Button(modifier = Modifier
+                                    .weight(1f)
+                                    .padding(8.dp), onClick = {
+                                    resetGame()
+                                }) {
+                                    Text(text = "Start a new game")
+                                }
+                                Button(modifier = Modifier
+                                    .weight(1f)
+                                    .padding(8.dp), onClick = {
+                                    displayPerformance = true
+                                }) {
+                                    Text(text = "See perfomance")
+                                }
+                            }
+                        } else {
+                            Button(modifier = Modifier.align(Alignment.Center), onClick = {
+                                resetGame()
+                            }) {
+                                Text(text = "Try another word")
+                            }
                         }
+
                     }
                 }
             }

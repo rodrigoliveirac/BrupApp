@@ -11,4 +11,7 @@ data class Trial(
     val errors: Int = 0,
     val answer: String = "",
     val tip: String = "",
+    val gameIsFinish: Boolean = false,
+    val newGame: Boolean = false,
+    val performance: Float = 0.0f
 )

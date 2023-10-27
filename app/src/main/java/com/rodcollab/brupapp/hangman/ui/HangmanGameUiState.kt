@@ -8,5 +8,8 @@ data class HangmanGameUiState(
     val chars: List<CharItem> = listOf(),
     val answer: String = "",
     val letterOptions: List<LetterModel> = listOf(),
-    val tip: String = ""
+    val tip: String = "",
+    val gameIsFinish: Boolean = false,
+    val newGame: Boolean = false,
+    val performance: Pair<Float, String> = Pair(first = 0.0f, second = "0%")
 )

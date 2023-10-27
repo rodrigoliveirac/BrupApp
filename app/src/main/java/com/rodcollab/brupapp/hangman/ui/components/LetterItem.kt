@@ -29,7 +29,7 @@ fun LetterItem(item: CharItem) {
             modifier = Modifier
                 .padding(bottom = 8.dp)
                 .graphicsLayer {
-                    alpha = if (item.guessed || !item.isLetter) 1f else 0f
+                    alpha =  1f
                 }, text = item.char, fontSize = 16.sp, fontWeight = FontWeight.ExtraBold
         )
         if (item.isLetter) {

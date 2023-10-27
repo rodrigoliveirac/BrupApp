@@ -27,7 +27,10 @@ fun Trial.toExternal(options: List<LetterModel>) =
         chars.toCharItem(usedLetters),
         answer,
         letterOptions = options,
-        tip
+        tip,
+        gameIsFinish,
+        newGame,
+        Pair(performance, "${(performance * 100).toInt()}%")
     )
 
 class HangmanGameViewModel(private val repository: HangmanGame) : CoroutineScope by MainScope() {
@@ -47,7 +50,8 @@ class HangmanGameViewModel(private val repository: HangmanGame) : CoroutineScope
 
     init {
         launch {
-            val state = repository.prepareGame().toExternal(options = letters)
+            repository.prepareGame()
+            val state = repository.gameState().toExternal(options = letters)
             _uiState.update { state }
         }
     }
@@ -64,10 +68,15 @@ class HangmanGameViewModel(private val repository: HangmanGame) : CoroutineScope
     }
 
     fun resetGame() {
-        repository.resetGame()
-        updateLettersUiModel(GameStatus.RESET)
-        _uiState.update {
-            repository.gameState().toExternal(options = letters)
+        launch {
+            repository.resetGame()
+            _uiState.update {
+                it.copy(isLoading = true)
+            }
+            updateLettersUiModel(GameStatus.RESET)
+            _uiState.update {
+                repository.gameState().toExternal(options = letters)
+            }
         }
     }
 

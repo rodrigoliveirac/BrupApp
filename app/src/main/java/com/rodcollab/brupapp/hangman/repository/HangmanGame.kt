@@ -7,9 +7,9 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
 interface HangmanGame {
-    suspend fun prepareGame(): Trial
+    suspend fun prepareGame()
     fun verifyAnswerThenUpdateGameState(letter: Char)
-    fun resetGame()
+    suspend fun resetGame()
     fun gameState(): Trial
 }
 
@@ -23,12 +23,16 @@ class HangmanGameImpl(
 ) : HangmanGame {
 
     private var dataSet = mutableListOf<WordAnswer>()
+    var gameIsFinish = false
+        private set
+    var totalWords = 0
+        private set
+    var newGame = false
+        private set
     var sourceAnswer = listOf<Char>()
         private set
-
     var answer = ""
         private set
-
     var tip = ""
         private set
 
@@ -63,8 +67,10 @@ class HangmanGameImpl(
         private set
     var gameOn = false
         private set
+    var rightAnswers = 0
+        private set
 
-    override suspend fun prepareGame(): Trial {
+    override suspend fun prepareGame() {
 
         dataSet = withContext(Dispatchers.IO) {
             randomWords.randomWords().map { word -> word.word }.map { word ->
@@ -120,26 +126,18 @@ class HangmanGameImpl(
             }.toMutableList()
         }
 
+        totalWords = dataSet.size
+
+        rightAnswers = dataSet.size
+
         getSourceAnswer(dataSet) { sourceAnswerCreated ->
             sourceAnswer = sourceAnswerCreated
         }
-
-        return Trial(
-            gameOn = gameOn,
-            gameOver = gameOver,
-            chars = sourceAnswer,
-            chances = chances,
-            tries = tries,
-            hits = hits,
-            errors = errors,
-            answer = answer,
-            usedLetters = usedLetters,
-            tip = tip
-        )
     }
 
 
     override fun verifyAnswerThenUpdateGameState(letter: Char) {
+
         addToGuessedLetters(letter)
 
         incrementTries()
@@ -150,9 +148,18 @@ class HangmanGameImpl(
 
         updateScore(letterExists)
 
+        if (gameOver) {
+            rightAnswers -= 1
+        }
+
+        if (dataSet.isEmpty() && gameOver || gameOn && dataSet.isEmpty()) {
+            gameIsFinish = true
+        }
+
+
     }
 
-    override fun resetGame() {
+    override suspend fun resetGame() {
         usedLetters.removeAll(usedLetters)
         gameOn = false
         gameOver = false
@@ -161,26 +168,33 @@ class HangmanGameImpl(
         hits = 0
         tries = 0
         usedLetters = usedLetters
-        getSourceAnswer(dataSet) {
-            sourceAnswer = it
+
+        if (gameIsFinish) {
+            prepareGame()
+        } else {
+            getSourceAnswer(dataSet) {
+                sourceAnswer = it
+            }
         }
     }
 
-    override fun gameState(): Trial {
+    override fun gameState(): Trial = trial()
 
-        return Trial(
-            gameOn = gameOn,
-            gameOver = gameOver,
-            chars = sourceAnswer,
-            chances = chances,
-            tries = tries,
-            hits = hits,
-            errors = errors,
-            answer = answer,
-            usedLetters = usedLetters,
-            tip = tip
-        )
-    }
+    private fun trial() = Trial(
+        gameOn = gameOn,
+        gameOver = gameOver,
+        chars = sourceAnswer,
+        chances = chances,
+        tries = tries,
+        hits = hits,
+        errors = errors,
+        answer = answer,
+        usedLetters = usedLetters,
+        tip = tip,
+        gameIsFinish = gameIsFinish,
+        newGame = newGame,
+        performance = rightAnswers.toFloat() / totalWords.toFloat()
+    )
 
     private fun getSourceAnswer(
         data: List<WordAnswer>,

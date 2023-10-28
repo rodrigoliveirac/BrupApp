@@ -75,7 +75,7 @@ class HangmanGameImpl(
         dataSet = withContext(Dispatchers.IO) {
             randomWords.randomWords().map { word -> word.word }.map { word ->
                 //TODO("Need to review")
-                val definition = randomWords.definition(word)
+                val definition =  randomWords.definition(word)
                 var result = ""
                 if (definition == null) {
                     val wordCapitalized = word.replaceFirstChar { it.uppercase() }
@@ -93,6 +93,20 @@ class HangmanGameImpl(
                                 }
                                 text
                             } else if (text.contains("<em>")) {
+                                val newText = text.split("<em>").toMutableList()
+                                text = newText.first()
+                                newText.remove(newText.first())
+                                newText.map {
+                                    val textSplit = it.split("</em>").toMutableList()
+                                    if(word.lowercase() == textSplit.first().lowercase()) {
+                                        val targetWord = textSplit.first()
+                                        var textAnswer = ""
+                                        targetWord.map {
+                                            textAnswer += "_"
+                                        }
+                                        text += textAnswer + textSplit.last()
+                                    }
+                                }
                                 text
                             } else {
                                 text
@@ -118,8 +132,15 @@ class HangmanGameImpl(
                             text = newText.first()
                             newText.remove(newText.first())
                             newText.map {
-                                val nText = it.split("</em>").toMutableList()
-                                text += nText.first() + nText.last()
+                                val textSplit = it.split("</em>").toMutableList()
+                                if(word.lowercase() != textSplit.first().lowercase()) {
+                                    val targetWord = textSplit.first()
+                                    var textAnswer = ""
+                                    targetWord.map {
+                                        textAnswer += "_"
+                                    }
+                                    text += textAnswer + textSplit.last()
+                                }
                             }
                             text
                         } else {
@@ -181,7 +202,7 @@ class HangmanGameImpl(
             gameIsFinish = false
         } else {
             getSourceAnswer(dataSet) {
-                sourceAnswer = it.map {char ->
+                sourceAnswer = it.map { char ->
                     char.lowercase().first()
                 }
             }

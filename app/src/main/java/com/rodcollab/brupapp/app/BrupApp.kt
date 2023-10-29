@@ -9,7 +9,7 @@ class BrupApp : Application() {
     lateinit var appContainer : AppContainer
     override fun onCreate() {
         super.onCreate()
-        appContainer = AppContainerImpl()
+        appContainer = AppContainerImpl(this)
     }
 }
 

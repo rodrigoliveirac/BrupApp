@@ -1,6 +1,8 @@
 package com.rodcollab.brupapp.di
 
+import android.app.Application
 import com.jakewharton.retrofit2.converter.kotlinx.serialization.asConverterFactory
+import com.rodcollab.brupapp.app.ConnectivityHandler
 import com.rodcollab.brupapp.data.NetworkRandomWordsImpl
 import com.rodcollab.brupapp.data.WordnikService
 import kotlinx.serialization.json.Json
@@ -8,6 +10,7 @@ import okhttp3.MediaType.Companion.toMediaType
 import retrofit2.Retrofit
 
 interface AppContainer {
+
 }
 
 
@@ -32,8 +35,10 @@ abstract class WordnikConnection {
     }
 }
 
-class AppContainerImpl : AppContainer {
+class AppContainerImpl(application: Application) : AppContainer {
     init {
         NetworkRandomWordsImpl.getInstance()
+        ConnectivityHandler(application)
     }
+
 }

@@ -1,8 +1,11 @@
 package com.rodcollab.brupapp.data
 
+import android.util.Log
 import com.rodcollab.brupapp.BuildConfig
 import com.rodcollab.brupapp.di.WordnikConnection
-import kotlinx.serialization.SerialName
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
+import kotlinx.coroutines.withContext
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.JsonObject
 import retrofit2.Response
@@ -12,23 +15,36 @@ import retrofit2.http.Query
 
 interface NetworkRandomWords {
     suspend fun randomWords(): List<WordItem>
-    suspend fun definition(word: String): List<Definition>?
+    suspend fun definition(word: String): List<Definition>
 }
 
 class NetworkRandomWordsImpl : NetworkRandomWords {
 
     override suspend fun randomWords(): List<WordItem> {
-        if (service.randomWords().isSuccessful) {
-            return service.randomWords().body()!!
+        val response = withContext(Dispatchers.IO) { async { service.randomWords() }.await() }
+        var randomWords = listOf<WordItem>()
+        if (response.isSuccessful) {
+            randomWords = service.randomWords().body()!!
         }
-        return service.randomWords().body()!!
+        return randomWords
     }
 
-    override suspend fun definition(word: String): List<Definition>? {
-        if (service.definitions(word).isSuccessful) {
-            return service.definitions(word).body()
+    override suspend fun definition(word: String): List<Definition> {
+        val response = withContext(Dispatchers.IO) { async { service.definitions(word) }.await() }
+        var definitions = listOf<Definition>()
+        if (response.isSuccessful) {
+            try {
+                definitions = response.body()!!.map { jsonObject ->
+                    val text = jsonObject["text"].toString()
+                    Log.d("DEFINITIONS_JSON_OBJECT", text)
+                    Definition(text = text)
+                }
+            } catch (e: Exception) {
+                Log.d("DEFINITIONS_CATCH", e.message.toString())
+                Definition(text = "")
+            }
         }
-        return emptyList()
+        return definitions
     }
 
     companion object : WordnikConnection() {
@@ -52,12 +68,12 @@ interface WordnikService {
     @GET("word.json/{word}/definitions")
     suspend fun definitions(
         @Path("word") word: String,
-        @Query("limit") limit: Int = 10,
+        @Query("limit") limit: Int = 1,
         @Query("includeRelated") includeRelated: Boolean = false,
         @Query("useCanonical") useCanonical: Boolean = false,
         @Query("includeTags") includeTags: Boolean = false,
         @Query("api_key") apiKey: String = BuildConfig.API_KEY
-    ): Response<ArrayList<Definition>>
+    ): Response<List<JsonObject>>
 
 }
 
@@ -67,38 +83,7 @@ data class WordItem(
     val id: Int,
 )
 
-@Serializable
+
 data class Definition(
-    @SerialName("id")
-    val id: String? = null,
-    @SerialName("partOfSpeech")
-    val partOfSpeech: String? = null,
-    @SerialName("attributionText")
-    val attributionText: String? = null,
-    @SerialName("sourceDictionary")
-    val sourceDictionary: String? = null,
-    @SerialName("text")
-    val text: String? = null,
-    @SerialName("sequence")
-    val sequence: String? = null,
-    @SerialName("score")
-    val score: Int? = null,
-    @SerialName("word")
-    val word: String? = null,
-    @SerialName("attributionUrl")
-    val attributionUrl: String? = null,
-    @SerialName("wordnikUrl")
-    val wordnikUrl: String? = null,
-    @SerialName("citations")
-    val citations: List<JsonObject>? = null,
-    @SerialName("exampleUses")
-    val exampleUses: List<JsonObject>? = null,
-    @SerialName("labels")
-    val labels: List<JsonObject>? = null,
-    @SerialName("notes")
-    val notes: List<JsonObject>? = null,
-    @SerialName("relatedWords")
-    val relatedWords: List<JsonObject>? = null,
-    @SerialName("textProns")
-    val textProns: List<JsonObject>? = null
+    val text: String
 )

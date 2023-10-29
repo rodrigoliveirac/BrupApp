@@ -75,49 +75,14 @@ class HangmanGameImpl(
         dataSet = withContext(Dispatchers.IO) {
             randomWords.randomWords().map { word -> word.word }.map { word ->
                 //TODO("Need to review")
-                val definition =  randomWords.definition(word)
+                val definition = randomWords.definition(word)
+
                 var result = ""
-                if (definition == null) {
-                    val wordCapitalized = word.replaceFirstChar { it.uppercase() }
-                    val definitionUsingWordCapitalized = randomWords.definition(wordCapitalized)
-                    definitionUsingWordCapitalized?.let { response ->
-                        result = if (response.isNotEmpty()) {
-                            var text = response.first().text.toString()
-                            if (text.contains("<xref>")) {
-                                val newText = text.split("<xref>").toMutableList()
-                                text = newText.first()
-                                newText.remove(newText.first())
-                                newText.map {
-                                    val nText = it.split("</xref>").toMutableList()
-                                    text += nText.first() + nText.last()
-                                }
-                                text
-                            } else if (text.contains("<em>")) {
-                                val newText = text.split("<em>").toMutableList()
-                                text = newText.first()
-                                newText.remove(newText.first())
-                                newText.map {
-                                    val textSplit = it.split("</em>").toMutableList()
-                                    if(word.lowercase() == textSplit.first().lowercase()) {
-                                        val targetWord = textSplit.first()
-                                        var textAnswer = ""
-                                        targetWord.map {
-                                            textAnswer += "_"
-                                        }
-                                        text += textAnswer + textSplit.last()
-                                    }
-                                }
-                                text
-                            } else {
-                                text
-                            }
-                        } else {
-                            result
-                        }
-                    }
-                } else {
-                    result = if (definition.isNotEmpty()) {
-                        var text = definition.first().text.toString()
+                if (definition.isEmpty()) {
+                    val wordCapitalizedOrNot = word.replaceFirstChar { it.uppercase() }
+                    val targetResponse = randomWords.definition(wordCapitalizedOrNot)
+                    result = if (targetResponse.isNotEmpty()) {
+                        var text = targetResponse.first().text
                         if (text.contains("<xref>")) {
                             val newText = text.split("<xref>").toMutableList()
                             text = newText.first()
@@ -133,7 +98,7 @@ class HangmanGameImpl(
                             newText.remove(newText.first())
                             newText.map {
                                 val textSplit = it.split("</em>").toMutableList()
-                                if(word.lowercase() != textSplit.first().lowercase()) {
+                                if (word.lowercase() == textSplit.first().lowercase()) {
                                     val targetWord = textSplit.first()
                                     var textAnswer = ""
                                     targetWord.map {
@@ -148,6 +113,36 @@ class HangmanGameImpl(
                         }
                     } else {
                         result
+                    }
+                } else {
+                    var text = definition.first().text
+                    result = if (text.contains("<xref>")) {
+                        val newText = text.split("<xref>").toMutableList()
+                        text = newText.first()
+                        newText.remove(newText.first())
+                        newText.map {
+                            val nText = it.split("</xref>").toMutableList()
+                            text += nText.first() + nText.last()
+                        }
+                        text
+                    } else if (text.contains("<em>")) {
+                        val newText = text.split("<em>").toMutableList()
+                        text = newText.first()
+                        newText.remove(newText.first())
+                        newText.map {
+                            val textSplit = it.split("</em>").toMutableList()
+                            if (word.lowercase() != textSplit.first().lowercase()) {
+                                val targetWord = textSplit.first()
+                                var textAnswer = ""
+                                targetWord.map {
+                                    textAnswer += "_"
+                                }
+                                text += textAnswer + textSplit.last()
+                            }
+                        }
+                        text
+                    } else {
+                        text
                     }
                 }
                 WordAnswer(value = word, definition = result)
@@ -263,10 +258,5 @@ class HangmanGameImpl(
     private fun addToGuessedLetters(letter: Char) {
         usedLetters.add(letter)
         usedLetters = usedLetters
-    }
-
-    private fun isLetter(c: Char): Boolean = when (c) {
-        in 'a'..'z', in 'A'..'Z' -> true
-        else -> false
     }
 }

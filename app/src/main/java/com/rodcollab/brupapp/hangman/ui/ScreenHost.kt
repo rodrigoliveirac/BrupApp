@@ -36,7 +36,7 @@ fun ScreenHost(gameViewModel: HangmanGameViewModel = viewModel(factory = Hangman
 
     Scaffold(topBar = {
         CenterAlignedTopAppBar(modifier = Modifier.shadow(6.dp), title = {
-            Text(text = "Hangman")
+            Text(text = "GuessWord")
         })
     }) {
         Box(

@@ -1,6 +1,7 @@
 package com.rodcollab.brupapp.hangman.ui
 
 import androidx.compose.runtime.Composable
+import com.rodcollab.brupapp.di.ConnectionObserver.hasConnection
 import com.rodcollab.brupapp.hangman.domain.Trial
 import com.rodcollab.brupapp.hangman.repository.HangmanGame
 import com.rodcollab.brupapp.hangman.repository.HangmanGameImpl
@@ -33,7 +34,8 @@ fun Trial.toExternal(options: List<LetterModel>) =
         gameIsFinish,
         newGame,
         Pair(performance, "${(performance * 100).toInt()}%"),
-        displayPerformance = gameIsFinish
+        displayPerformance = gameIsFinish,
+        networkStatus = true
     )
 
 class HangmanGameViewModel(private val repository: HangmanGame) : CoroutineScope by MainScope() {
@@ -52,10 +54,17 @@ class HangmanGameViewModel(private val repository: HangmanGame) : CoroutineScope
     }.toMutableList()
 
     init {
+        prepareGame()
+    }
+
+    private fun prepareGame() {
         launch {
-            repository.prepareGame()
+
+            if (hasConnection) {
+                repository.prepareGame()
+            }
             val state = repository.gameState().toExternal(options = letters)
-            _uiState.update { state }
+            _uiState.update { state.copy(networkStatus = hasConnection) }
         }
     }
 
@@ -75,6 +84,7 @@ class HangmanGameViewModel(private val repository: HangmanGame) : CoroutineScope
             "RESTART" -> {
                 restartGame()
             }
+
             "NEXT" -> {
                 nextWord()
             }
@@ -93,15 +103,22 @@ class HangmanGameViewModel(private val repository: HangmanGame) : CoroutineScope
 
     private fun restartGame() {
         launch {
-            _uiState.update {
-                it.copy(isLoading = true, displayPerformance = false)
-            }
-            withContext(Dispatchers.IO) {
-                repository.resetGame()
-            }
-            updateLettersUiModel(GameStatus.RESET)
-            _uiState.update {
-                repository.gameState().toExternal(options = letters)
+            if (hasConnection) {
+                _uiState.update {
+                    it.copy(isLoading = true, displayPerformance = false)
+                }
+                withContext(Dispatchers.IO) {
+                    repository.resetGame()
+                }
+                updateLettersUiModel(GameStatus.RESET)
+                _uiState.update {
+                    repository.gameState().toExternal(options = letters)
+                        .copy(networkStatus = hasConnection)
+                }
+            } else {
+                _uiState.update {
+                    HangmanGameUiState(gameIsFinish = it.gameIsFinish, networkStatus = hasConnection, refreshDialog = true)
+                }
             }
         }
     }
@@ -128,6 +145,19 @@ class HangmanGameViewModel(private val repository: HangmanGame) : CoroutineScope
 
         }
 
+    }
+
+    fun refresh() {
+        launch {
+            if (_uiState.value.gameIsFinish) {
+                restartGame()
+            } else {
+                _uiState.update {
+                    it.copy(isLoading = true, refreshDialog = false)
+                }
+                prepareGame()
+            }
+        }
     }
 
 

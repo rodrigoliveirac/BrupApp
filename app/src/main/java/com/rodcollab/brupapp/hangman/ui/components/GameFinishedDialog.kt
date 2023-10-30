@@ -29,24 +29,32 @@ import com.rodcollab.brupapp.hangman.ui.HangmanGameUiState
 @Composable
 fun GameFinishedDialog(
     uiState: HangmanGameUiState,
-    resetGame: (String) -> Unit
+    resetGame: (String) -> Unit,
+    refreshConnection: () -> Unit
 ) {
+
+    //TODO("need to review. ui logic should not be complex")
+
     var title by remember { mutableStateOf("") }
     var displayPerformance by remember { mutableStateOf(false) }
 
     if (uiState.gameOver) title = "You lost! :(" else if (uiState.gameOn) title = "Congrats! :)"
     if (uiState.isLoading) title = "Preparing the game"
     if (uiState.displayPerformance && displayPerformance) title = "Your Performance was"
+    if (!uiState.networkStatus && !uiState.isLoading) title = "No internet :("
 
     var perfomance by remember { mutableStateOf(Animatable(initialValue = 0.0f)) }
 
     LaunchedEffect(displayPerformance) {
-        if(uiState.gameIsFinish) {
-            perfomance.animateTo(uiState.performance.first, TweenSpec(1000, delay = 1000, EaseInCirc))
+        if (uiState.gameIsFinish) {
+            perfomance.animateTo(
+                uiState.performance.first,
+                TweenSpec(1000, delay = 1000, EaseInCirc)
+            )
         }
     }
 
-    if (uiState.gameOn || uiState.gameOver || uiState.isLoading) {
+    if (uiState.gameOn || uiState.gameOver || uiState.isLoading || !uiState.networkStatus) {
         AlertDialog(
             title = {
                 Box(Modifier.fillMaxWidth()) {
@@ -77,6 +85,11 @@ fun GameFinishedDialog(
                                 )
                             }
                         }
+                    } else if (!uiState.networkStatus && !uiState.refreshDialog) {
+                        Text(
+                            modifier = Modifier.align(Alignment.Center),
+                            text = "sorry :("
+                        )
                     } else {
                         Text(
                             modifier = Modifier.align(Alignment.Center),
@@ -90,24 +103,41 @@ fun GameFinishedDialog(
                 if (!uiState.isLoading) {
                     Box(Modifier.fillMaxWidth()) {
                         if (uiState.gameIsFinish) {
-                            Column() {
-                                Button(modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(bottom = 4.dp), onClick = {
-                                    perfomance = Animatable(initialValue = 0.0f)
-                                    resetGame("RESTART")
-                                    displayPerformance = !displayPerformance
-                                }) {
-                                    Text(text = "Start a new game")
+                            if(uiState.refreshDialog) {
+                                Button(
+                                    modifier = Modifier.align(Alignment.Center),
+                                    onClick = refreshConnection
+                                ) {
+                                    Text(text = "Refresh")
                                 }
-                                if (uiState.displayPerformance && !displayPerformance) {
-                                    Button(
-                                        modifier = Modifier
-                                            .fillMaxWidth(), onClick = { displayPerformance = !displayPerformance }
-                                    ) {
-                                        Text(text = "See perfomance")
+                            } else {
+                                Column() {
+                                    Button(modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(bottom = 4.dp), onClick = {
+                                        perfomance = Animatable(initialValue = 0.0f)
+                                        resetGame("RESTART")
+                                        displayPerformance = !displayPerformance
+                                    }) {
+                                        Text(text = "Start a new game")
+                                    }
+                                    if (uiState.displayPerformance && !displayPerformance) {
+                                        Button(
+                                            modifier = Modifier
+                                                .fillMaxWidth(),
+                                            onClick = { displayPerformance = !displayPerformance }
+                                        ) {
+                                            Text(text = "See perfomance")
+                                        }
                                     }
                                 }
+                            }
+                        } else if (!uiState.networkStatus) {
+                            Button(
+                                modifier = Modifier.align(Alignment.Center),
+                                onClick = refreshConnection
+                            ) {
+                                Text(text = "Refresh")
                             }
                         } else {
                             Button(

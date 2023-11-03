@@ -14,13 +14,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.unit.dp
-import com.rodcollab.brupapp.hangman.ui.components.GameFinishedDialog
-import com.rodcollab.brupapp.hangman.ui.components.SetupHangmanGameScreen
-
-val alphabet = mutableListOf(
-    'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm',
-    'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z'
-)
+import com.rodcollab.brupapp.hangman.ui.components.menu.GameMenuDialog
+import com.rodcollab.brupapp.hangman.ui.components.game.SetupHangmanGameScreen
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -28,10 +23,9 @@ fun ScreenHost(gameViewModel: HangmanGameViewModel = viewModel(factory = Hangman
 
     val uiState by gameViewModel.uiState.collectAsState()
 
-    GameFinishedDialog(
+    GameMenuDialog(
         uiState = uiState,
-        resetGame = { intent -> gameViewModel.moveForward(intent) },
-        refreshConnection = { gameViewModel.refresh() }
+        onIntent = { intent -> gameViewModel.onIntent(intent) }
     )
 
     Scaffold(topBar = {

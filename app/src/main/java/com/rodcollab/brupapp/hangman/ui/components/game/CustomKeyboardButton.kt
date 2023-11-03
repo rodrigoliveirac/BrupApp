@@ -1,4 +1,4 @@
-package com.rodcollab.brupapp.hangman.ui.components
+package com.rodcollab.brupapp.hangman.ui.components.game
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.gestures.detectTapGestures
@@ -19,7 +19,7 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import com.rodcollab.brupapp.hangman.ui.LetterModel
+import com.rodcollab.brupapp.hangman.ui.model.LetterModel
 
 @Composable
 fun CustomKeyboardButton(

@@ -7,11 +7,12 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+
 @Composable
 fun PrepareGameDialog() {
     WidgetDialog {
         TitleDialog("Preparing the game")
-        Spacer(modifier = Modifier.size(8.dp))
+        Spacer(modifier = Modifier.size(16.dp))
         CircularProgressIndicator(strokeWidth = 2.dp)
     }
 }
@@ -21,7 +22,7 @@ fun PrepareGameDialog() {
 fun PrepareGameDialogPreview() {
     WidgetDialog {
         TitleDialog("Preparing the game")
-        Spacer(modifier = Modifier.size(8.dp))
+        Spacer(modifier = Modifier.size(16.dp))
         CircularProgressIndicator(strokeWidth = 2.dp)
     }
 }

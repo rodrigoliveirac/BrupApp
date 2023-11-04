@@ -16,7 +16,6 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
@@ -40,7 +39,7 @@ fun PerformanceGameDialog(
 
     WidgetDialog {
         TitleDialog("Your performance was")
-        Spacer(modifier = Modifier.size(8.dp))
+        Spacer(modifier = Modifier.size(16.dp))
         Box {
             CircularProgressIndicator(
                 modifier = Modifier
@@ -54,6 +53,7 @@ fun PerformanceGameDialog(
                 text = performanceText
             )
         }
+        Spacer(modifier = Modifier.size(16.dp))
         Button(modifier = Modifier
             .fillMaxWidth()
             .padding(bottom = 4.dp), onClick = {
@@ -77,7 +77,7 @@ fun PerformanceGameDialogPreview() {
     }
     WidgetDialog {
         TitleDialog("Your performance was")
-        Spacer(modifier = Modifier.size(8.dp))
+        Spacer(modifier = Modifier.size(16.dp))
         Box {
             CircularProgressIndicator(
                 modifier = Modifier
@@ -90,6 +90,14 @@ fun PerformanceGameDialogPreview() {
                 modifier = Modifier.align(Alignment.Center),
                 text = "40%"
             )
+        }
+        Spacer(modifier = Modifier.size(16.dp))
+        Button(modifier = Modifier
+            .fillMaxWidth()
+            .padding(bottom = 4.dp), onClick = {
+           // onIntent(UiDialogIntent.StartNewGame)
+        }) {
+            Text(text = "Start a new game")
         }
     }
 }

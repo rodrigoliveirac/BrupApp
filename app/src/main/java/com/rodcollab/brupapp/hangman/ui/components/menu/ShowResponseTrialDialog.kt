@@ -1,7 +1,9 @@
 package com.rodcollab.brupapp.hangman.ui.components.menu
 
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Button
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -14,7 +16,9 @@ import com.rodcollab.brupapp.hangman.ui.intent.UiDialogIntent
 fun ShowResponseTrialDialog(title: String, answer: String, onIntent: (UiDialogIntent) -> Unit) {
     WidgetDialog {
         TitleDialog(title = title)
-        TitleDialog(title = "The word is $answer")
+        Spacer(modifier = Modifier.size(8.dp))
+        DescriptionDialog(answer = answer)
+        Spacer(modifier = Modifier.size(16.dp))
         Button(modifier = Modifier
             .fillMaxWidth()
             .padding(bottom = 4.dp), onClick = {
@@ -33,7 +37,9 @@ fun FinishedTrialDialogPreview(
 ) {
     WidgetDialog {
         TitleDialog(title = title)
-        TitleDialog(title = description)
+        Spacer(modifier = Modifier.size(8.dp))
+        DescriptionDialog(answer = description)
+        Spacer(modifier = Modifier.size(16.dp))
         Button(modifier = Modifier
             .fillMaxWidth()
             .padding(bottom = 4.dp), onClick = {

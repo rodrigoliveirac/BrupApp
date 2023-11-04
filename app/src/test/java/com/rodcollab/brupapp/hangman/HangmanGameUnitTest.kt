@@ -1,21 +1,34 @@
 package com.rodcollab.brupapp.hangman
 
+import com.rodcollab.brupapp.data.NetworkRandomWordsImpl
 import com.rodcollab.brupapp.hangman.domain.Trial
 import com.rodcollab.brupapp.hangman.ui.alphabet
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.test.runTest
+import org.junit.After
+import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
+import org.junit.Assert.assertTrue
+import org.junit.Before
 import org.junit.Test
 
-import org.junit.Assert.*
-import org.junit.Before
-
 class HangmanGameUnitTest {
-
-    private val questionStorage: ArrayList<Char> = arrayListOf('h', 'i')
 
     private lateinit var defaultGame: HangmanGameImplFake
 
     @Before
-    fun setup() {
-        defaultGame = HangmanGameImplFake(questionStorage)
+    fun setup()  {
+        NetworkRandomWordsImpl.getInstance()
+        val randomWordsNetwork = NetworkRandomWordsImpl.getInstance()
+        defaultGame = HangmanGameImplFake(randomWordsNetwork)
+    }
+    @After
+    fun prepareGame() = runTest {
+        CoroutineScope(Dispatchers.Unconfined).launch {
+            defaultGame.prepareGame()
+        }
     }
 
     @Test
@@ -23,21 +36,30 @@ class HangmanGameUnitTest {
 
         val letter = alphabet.random()
 
+        val initialTrial = defaultGame.gameState()
+
         defaultGame.verifyAnswerThenUpdateGameState(letter)
 
-        val trialExpected = defaultGame.getTrialState()
+        val trialExpected = defaultGame.gameState()
 
         val trialActual = Trial(
-            chars = questionStorage,
-            usedLetters = defaultGame.guessedLetters,
+            gameOn = defaultGame.gameOn,
+            gameOver = defaultGame.gameOver,
+            chars = defaultGame.sourceAnswer,
             chances = defaultGame.chances,
             tries = defaultGame.tries,
             hits = defaultGame.hits,
             errors = defaultGame.errors,
-            answer = defaultGame.answer
+            answer = defaultGame.answer,
+            usedLetters = defaultGame.usedLetters,
+            tip = defaultGame.tip,
+            gameIsFinish = defaultGame.gameIsFinish,
+            newGame = defaultGame.newGame,
+            performance = defaultGame.rightAnswers.toFloat() / defaultGame.totalWords.toFloat()
         )
 
         assertTrue(trialActual == trialExpected)
+        assertFalse(trialActual == initialTrial)
     }
 
 
@@ -64,7 +86,9 @@ class HangmanGameUnitTest {
     @Test
     fun checkGameStateWhenUserGuessesWrongLetter() {
 
-        val letterExists = defaultGame.isLetterExists('l', questionStorage)
+        val sourceAnswerMock = listOf<Char>('h','i')
+
+        val letterExists = defaultGame.isLetterExists('l', sourceAnswerMock)
         assertEquals(false, letterExists)
 
         val initialChances = defaultGame.chances
@@ -80,9 +104,13 @@ class HangmanGameUnitTest {
     @Test
     fun checkGameStateWhenUserGuessesHitLetter() {
 
+        val sourceAnswerMock = listOf<Char>('h','i')
+
         // Check if the letter guessed by the user exist in the right answer
-        val letterExists = defaultGame.isLetterExists('h', questionStorage)
-        assertEquals(true, letterExists)
+        val letterExists = defaultGame.isLetterExists('h', sourceAnswerMock)
+
+
+       assertEquals(true, letterExists)
 
         // Update score
         defaultGame.updateScore(letterExists)
@@ -92,14 +120,4 @@ class HangmanGameUnitTest {
         assertEquals(6, defaultGame.chances)
     }
 
-    @Test
-    fun testGetAnswerReturnsCorrectSequence() {
-
-        val questionStorage = mutableListOf<Char>('c','o','d','e')
-
-        val answer = defaultGame.getAnswer(questionStorage)
-
-        assertEquals("code", answer)
-
-    }
 }

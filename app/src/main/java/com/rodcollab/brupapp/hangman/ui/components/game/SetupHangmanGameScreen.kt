@@ -1,4 +1,4 @@
-package com.rodcollab.brupapp.hangman.ui.components
+package com.rodcollab.brupapp.hangman.ui.components.game
 
 import android.content.res.Configuration
 import androidx.compose.foundation.layout.Arrangement

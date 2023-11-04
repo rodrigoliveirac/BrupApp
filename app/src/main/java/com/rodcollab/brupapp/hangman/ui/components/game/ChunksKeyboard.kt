@@ -1,10 +1,10 @@
-package com.rodcollab.brupapp.hangman.ui.components
+package com.rodcollab.brupapp.hangman.ui.components.game
 
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import com.rodcollab.brupapp.hangman.ui.LetterModel
+import com.rodcollab.brupapp.hangman.ui.model.LetterModel
 
 @Composable
 fun ChunksKeyboard(

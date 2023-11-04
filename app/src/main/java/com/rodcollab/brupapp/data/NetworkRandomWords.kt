@@ -36,11 +36,9 @@ class NetworkRandomWordsImpl : NetworkRandomWords {
             try {
                 definitions = response.body()!!.map { jsonObject ->
                     val text = jsonObject["text"].toString()
-                    Log.d("DEFINITIONS_JSON_OBJECT", text)
                     Definition(text = text)
                 }
             } catch (e: Exception) {
-                Log.d("DEFINITIONS_CATCH", e.message.toString())
                 Definition(text = "")
             }
         }

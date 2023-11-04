@@ -1,4 +1,4 @@
-package com.rodcollab.brupapp.hangman.ui
+package com.rodcollab.brupapp.hangman.ui.model
 
 data class LetterModel(
     val char: Char,

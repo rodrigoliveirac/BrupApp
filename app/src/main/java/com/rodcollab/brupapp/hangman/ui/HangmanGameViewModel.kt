@@ -5,6 +5,10 @@ import com.rodcollab.brupapp.di.ConnectionObserver.hasConnection
 import com.rodcollab.brupapp.hangman.domain.Trial
 import com.rodcollab.brupapp.hangman.repository.HangmanGame
 import com.rodcollab.brupapp.hangman.repository.HangmanGameImpl
+import com.rodcollab.brupapp.hangman.ui.enums.GameMoveForward
+import com.rodcollab.brupapp.hangman.ui.enums.GameState
+import com.rodcollab.brupapp.hangman.ui.intent.UiDialogIntent
+import com.rodcollab.brupapp.mapper.toExternal
 import com.rodcollab.brupapp.util.initializer
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -15,125 +19,84 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
-fun Trial.toExternal(options: List<LetterModel>) =
-    HangmanGameUiState(
-        isLoading = false,
-        score = hashMapOf(
-            "Tries: " to tries,
-            "Chances left: " to chances,
-            "Hits: " to hits,
-            "Wrongs: " to errors,
-            "Used letters: " to usedLetters.toString()
-        ),
-        gameOn,
-        gameOver,
-        chars.toCharItem(usedLetters),
-        answer,
-        letterOptions = options,
-        tip,
-        gameIsFinish,
-        newGame,
-        Pair(performance, "${(performance * 100).toInt()}%"),
-        displayPerformance = gameIsFinish,
-        networkStatus = true
-    )
-
 class HangmanGameViewModel(private val repository: HangmanGame) : CoroutineScope by MainScope() {
 
     private val _uiState: MutableStateFlow<HangmanGameUiState> by lazy {
-        MutableStateFlow(HangmanGameUiState(isLoading = true))
+        MutableStateFlow(HangmanGameUiState(gameState = GameState.PREPARING))
     }
     val uiState = _uiState.asStateFlow()
 
-    private var letters = alphabet.map { char ->
-        LetterModel(
-            char = char,
-            isEnabled = true,
-            isSelected = false
-        )
-    }.toMutableList()
+    private var letters = alphabet.toLetterModels().toMutableList()
 
     init {
         prepareGame()
-    }
-
-    private fun prepareGame() {
-        launch {
-
-            if (hasConnection) {
-                repository.prepareGame()
-            }
-            val state = repository.gameState().toExternal(options = letters)
-            _uiState.update { state.copy(networkStatus = hasConnection) }
-        }
     }
 
     fun verifyAnswerThenUpdateGameState(char: Char) {
 
         repository.verifyAnswerThenUpdateGameState(char)
 
-        updateLettersUiModel(GameStatus.VERIFY_ANSWER, char)
+        updateLettersUiModel(GameMoveForward.VERIFY_ANSWER, char)
+
+        val state = repository.gameState()
+
+        val gameState = gameStateAfterGameOnOrOver(state)
 
         _uiState.update {
-            repository.gameState().toExternal(options = letters)
+            state.toExternal(options = letters).copy(gameState = gameState)
         }
     }
 
-    fun moveForward(intent: String) {
-        when (intent) {
-            "RESTART" -> {
-                restartGame()
-            }
-
-            "NEXT" -> {
-                nextWord()
-            }
+    fun onIntent(event: UiDialogIntent) {
+        when (event) {
+            is UiDialogIntent.RefreshConnection -> refresh()
+            is UiDialogIntent.StartNewGame -> restartGame()
+            is UiDialogIntent.NextWord -> nextWord()
+            is UiDialogIntent.DisplayPerformance -> displayPerformance(event.display)
         }
     }
 
-    private fun nextWord() {
+    private fun prepareGame() {
         launch {
-            repository.resetGame()
-            updateLettersUiModel(GameStatus.RESET)
-            _uiState.update {
-                repository.gameState().toExternal(options = letters)
-            }
-        }
-    }
 
-    private fun restartGame() {
-        launch {
-            if (hasConnection) {
-                _uiState.update {
-                    it.copy(isLoading = true, displayPerformance = false)
-                }
-                withContext(Dispatchers.IO) {
-                    repository.resetGame()
-                }
-                updateLettersUiModel(GameStatus.RESET)
-                _uiState.update {
-                    repository.gameState().toExternal(options = letters)
-                        .copy(networkStatus = hasConnection)
-                }
+            val gameState = if (hasConnection) {
+                repository.prepareGame()
+                GameState.IDLE
             } else {
-                _uiState.update {
-                    HangmanGameUiState(gameIsFinish = it.gameIsFinish, networkStatus = hasConnection, refreshDialog = true)
-                }
+                GameState.NO_NETWORK
+            }
+
+            val state = repository.gameState().toExternal(options = letters)
+            _uiState.update {
+                state.copy(
+                    gameState = gameState,
+                )
             }
         }
     }
 
-    private fun updateLettersUiModel(status: GameStatus, char: Char? = null) {
+    private fun gameStateAfterGameOnOrOver(state: Trial) =
+        if (state.gameOn || state.gameOver) {
+            if (state.gameIsFinish) {
+                GameState.ENDED
+            } else {
+                GameState.SHOW_RESPONSE
+            }
+        } else {
+            GameState.IDLE
+        }
+
+    private fun updateLettersUiModel(status: GameMoveForward, char: Char? = null) {
 
         when (status) {
 
-            GameStatus.RESET -> {
+            GameMoveForward.RESET -> {
                 letters = letters.map {
                     it.copy(isSelected = false, isEnabled = true)
                 }.toMutableList()
             }
 
-            GameStatus.VERIFY_ANSWER -> {
+            GameMoveForward.VERIFY_ANSWER -> {
                 letters = letters.map {
                     if (it.char == char) {
                         it.copy(isSelected = true, isEnabled = false)
@@ -147,30 +110,71 @@ class HangmanGameViewModel(private val repository: HangmanGame) : CoroutineScope
 
     }
 
-    fun refresh() {
+    private fun refresh() {
         launch {
             if (_uiState.value.gameIsFinish) {
                 restartGame()
             } else {
                 _uiState.update {
-                    it.copy(isLoading = true, refreshDialog = false)
+                    it.copy(gameState = GameState.PREPARING)
                 }
                 prepareGame()
             }
         }
     }
 
+    private fun nextWord() {
+        launch {
+            repository.resetGame()
+            updateLettersUiModel(GameMoveForward.RESET)
+            _uiState.update {
+                repository.gameState().toExternal(options = letters)
+            }
+        }
+    }
+
+    private fun restartGame() {
+        launch {
+            if (hasConnection) {
+                _uiState.update {
+                    it.copy(
+                        gameState = GameState.PREPARING,
+                        displayPerformance = false
+                    )
+                }
+                withContext(Dispatchers.IO) {
+                    repository.resetGame()
+                }
+                updateLettersUiModel(GameMoveForward.RESET)
+                _uiState.update {
+                    repository.gameState().toExternal(options = letters)
+                }
+            } else {
+                _uiState.update {
+                    HangmanGameUiState(
+                        gameState = GameState.NO_NETWORK,
+                        gameIsFinish = it.gameIsFinish,
+                    )
+                }
+            }
+        }
+    }
+
+    private fun displayPerformance(display: Boolean) {
+        _uiState.update {
+            it.copy(
+                displayPerformance = display,
+                displaySeePerformanceButton = !display,
+                gameState = GameState.DISPLAY_PERFORMANCE
+            )
+        }
+    }
 
     companion object {
         val Factory = initializer {
             HangmanGameViewModel(HangmanGameImpl.getInstance())
         }
     }
-}
-
-enum class GameStatus {
-    RESET,
-    VERIFY_ANSWER
 }
 
 @Composable

@@ -1,4 +1,4 @@
-package com.rodcollab.brupapp.hangman.ui.components
+package com.rodcollab.brupapp.hangman.ui.components.game
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
@@ -16,7 +16,7 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.rodcollab.brupapp.hangman.ui.CharItem
+import com.rodcollab.brupapp.hangman.ui.model.CharItem
 
 @Composable
 fun LetterItem(item: CharItem) {
@@ -29,7 +29,7 @@ fun LetterItem(item: CharItem) {
             modifier = Modifier
                 .padding(bottom = 8.dp)
                 .graphicsLayer {
-                    alpha =  if(item.guessed || !item.isLetter) 1.0f else 0.0f
+                    alpha =  item.alpha
                 }, text = item.char, fontSize = 16.sp, fontWeight = FontWeight.ExtraBold
         )
         if (item.isLetter) {

@@ -1,5 +1,6 @@
 package com.rodcollab.brupapp.hangman.ui
 
+import com.rodcollab.brupapp.hangman.repository.AnswerModel
 import com.rodcollab.brupapp.hangman.ui.enums.GameState
 import com.rodcollab.brupapp.hangman.ui.model.CharItem
 import com.rodcollab.brupapp.hangman.ui.model.LetterModel
@@ -15,10 +16,11 @@ data class HangmanGameUiState(
     val gameIsFinish: Boolean = false,
     val newGame: Boolean = false,
     val performance: Pair<Float, String> = Pair(first = 0.0f, second = "0%"),
-    val displayPerformance: Boolean = false,
     val networkStatus: Boolean = true,
     val refreshDialog: Boolean = false,
     val displaySeePerformanceButton: Boolean = false,
+    val displayReview: Boolean = false,
+    val review: List<AnswerModel> = listOf<AnswerModel>(),
     val gameState: GameState = GameState.IDLE,
 ) {
 

@@ -59,6 +59,15 @@ class HangmanGameViewModel(
             is UiDialogIntent.StartNewGame -> restartGame()
             is UiDialogIntent.NextWord -> nextWord()
             is UiDialogIntent.DisplayPerformance -> displayPerformance(event.display)
+            is UiDialogIntent.DisplayReview -> displayReview(event.display)
+        }
+    }
+
+    private fun displayReview(display: Boolean) {
+        _uiState.update {
+            it.copy(
+                displayReview = display,
+            )
         }
     }
 
@@ -175,9 +184,9 @@ class HangmanGameViewModel(
     private fun displayPerformance(display: Boolean) {
         _uiState.update {
             it.copy(
-                displayPerformance = display,
                 displaySeePerformanceButton = !display,
-                gameState = GameState.DISPLAY_PERFORMANCE
+                gameState = GameState.DISPLAY_PERFORMANCE,
+                review = reviewAnswer.reviewAnswers()
             )
         }
     }

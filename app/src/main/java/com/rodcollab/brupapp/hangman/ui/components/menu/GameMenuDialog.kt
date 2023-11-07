@@ -46,6 +46,8 @@ fun GameMenuDialog(
             PerformanceGameDialog(
                 performanceValue = uiState.performance.first,
                 performanceText = uiState.performance.second,
+                displayReview = uiState.displayReview,
+                review = uiState.review,
                 onIntent
             )
         }

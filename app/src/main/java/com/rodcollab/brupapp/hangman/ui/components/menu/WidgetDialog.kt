@@ -13,10 +13,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
 
 @Composable
 fun WidgetDialog(content: @Composable ColumnScope.() -> Unit) {
-    Dialog(onDismissRequest = {}) {
+    Dialog(onDismissRequest = {}, properties = DialogProperties(usePlatformDefaultWidth = false)) {
         Box(modifier = Modifier.background(Color.White, RoundedCornerShape(24.dp)).width(300.dp)) {
             Column(
                 modifier = Modifier

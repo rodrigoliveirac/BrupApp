@@ -1,8 +1,8 @@
 package com.rodcollab.brupapp.data
 
-import android.util.Log
 import com.rodcollab.brupapp.BuildConfig
 import com.rodcollab.brupapp.di.WordnikConnection
+import com.rodcollab.brupapp.hangman.repository.WordAnswer
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.withContext
@@ -14,35 +14,54 @@ import retrofit2.http.Path
 import retrofit2.http.Query
 
 interface NetworkRandomWords {
-    suspend fun randomWords(): List<WordItem>
-    suspend fun definition(word: String): List<Definition>
+    suspend fun questionItems(): List<WordAnswer>
+
 }
 
 class NetworkRandomWordsImpl : NetworkRandomWords {
 
-    override suspend fun randomWords(): List<WordItem> {
+    override suspend fun questionItems(): List<WordAnswer> {
         val response = withContext(Dispatchers.IO) { async { service.randomWords() }.await() }
         var randomWords = listOf<WordItem>()
+        val itemQuestions = mutableListOf<WordAnswer>()
         if (response.isSuccessful) {
             randomWords = service.randomWords().body()!!
         }
-        return randomWords
-    }
 
-    override suspend fun definition(word: String): List<Definition> {
-        val response = withContext(Dispatchers.IO) { async { service.definitions(word) }.await() }
-        var definitions = listOf<Definition>()
-        if (response.isSuccessful) {
-            try {
-                definitions = response.body()!!.map { jsonObject ->
-                    val text = jsonObject["text"].toString()
-                    Definition(text = text)
+        randomWords.map { word ->
+            val responseDefinition = withContext(Dispatchers.IO) { async { service.definitions(word.word) }.await() }
+            if (responseDefinition.isSuccessful) {
+                responseDefinition.body()!!.map { jsonObject ->
+                    var text = jsonObject["text"].toString()
+                    if (text.contains("<xref>")) {
+                        val newText = text.split("<xref>").toMutableList()
+                        text = newText.first()
+                        newText.remove(newText.first())
+                        newText.map {
+                            val nText = it.split("</xref>").toMutableList()
+                            text += nText.first() + nText.last()
+                        }
+                    } else if (text.contains("<em>")) {
+                        val newText = text.split("<em>").toMutableList()
+                        text = newText.first()
+                        newText.remove(newText.first())
+                        newText.map {
+                            val textSplit = it.split("</em>").toMutableList()
+                            if (word.word.lowercase() == textSplit.first().lowercase()) {
+                                val targetWord = textSplit.first()
+                                var textAnswer = ""
+                                targetWord.map {
+                                    textAnswer += "_"
+                                }
+                                text += textAnswer + textSplit.last()
+                            }
+                        }
+                    }
+                    itemQuestions.add(WordAnswer(value = word.word, definition = text))
                 }
-            } catch (e: Exception) {
-                Definition(text = "")
             }
         }
-        return definitions
+        return itemQuestions
     }
 
     companion object : WordnikConnection() {
@@ -79,9 +98,4 @@ interface WordnikService {
 data class WordItem(
     val word: String,
     val id: Int,
-)
-
-
-data class Definition(
-    val text: String
 )

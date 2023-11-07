@@ -5,6 +5,8 @@ import com.rodcollab.brupapp.di.ConnectionObserver.hasConnection
 import com.rodcollab.brupapp.hangman.domain.Trial
 import com.rodcollab.brupapp.hangman.repository.HangmanGame
 import com.rodcollab.brupapp.hangman.repository.HangmanGameImpl
+import com.rodcollab.brupapp.hangman.repository.ReviewAnswer
+import com.rodcollab.brupapp.hangman.repository.ReviewAnswerImpl
 import com.rodcollab.brupapp.hangman.ui.enums.GameMoveForward
 import com.rodcollab.brupapp.hangman.ui.enums.GameState
 import com.rodcollab.brupapp.hangman.ui.intent.UiDialogIntent
@@ -19,7 +21,10 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
-class HangmanGameViewModel(private val repository: HangmanGame) : CoroutineScope by MainScope() {
+class HangmanGameViewModel(
+    private val repository: HangmanGame,
+    private val reviewAnswer: ReviewAnswer
+) : CoroutineScope by MainScope() {
 
     private val _uiState: MutableStateFlow<HangmanGameUiState> by lazy {
         MutableStateFlow(HangmanGameUiState(gameState = GameState.PREPARING))
@@ -172,7 +177,10 @@ class HangmanGameViewModel(private val repository: HangmanGame) : CoroutineScope
 
     companion object {
         val Factory = initializer {
-            HangmanGameViewModel(HangmanGameImpl.getInstance())
+            HangmanGameViewModel(
+                repository = HangmanGameImpl.getInstance(),
+                reviewAnswer = ReviewAnswerImpl.getInstance()
+            )
         }
     }
 }

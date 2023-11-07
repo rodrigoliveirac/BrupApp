@@ -160,7 +160,6 @@ class HangmanGameViewModel(
                 _uiState.update {
                     it.copy(
                         gameState = GameState.PREPARING,
-                        displayPerformance = false
                     )
                 }
                 withContext(Dispatchers.IO) {

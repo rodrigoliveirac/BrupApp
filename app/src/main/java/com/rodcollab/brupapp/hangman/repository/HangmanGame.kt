@@ -19,7 +19,7 @@ data class WordAnswer(
 )
 
 class HangmanGameImpl(
-    private val randomWords: NetworkRandomWords,
+    private val dataSource: NetworkRandomWords,
 ) : HangmanGame {
 
     private var dataSet = mutableListOf<WordAnswer>()
@@ -42,7 +42,7 @@ class HangmanGameImpl(
         fun getInstance(): HangmanGame {
             if (instance == null) {
                 instance =
-                    HangmanGameImpl(randomWords = NetworkRandomWordsImpl.getInstance())
+                    HangmanGameImpl(dataSource = NetworkRandomWordsImpl.getInstance())
             }
             return instance!!
         }
@@ -73,80 +73,7 @@ class HangmanGameImpl(
     override suspend fun prepareGame() {
 
         dataSet = withContext(Dispatchers.IO) {
-            randomWords.randomWords().map { word -> word.word }.map { word ->
-                //TODO("Need to review")
-                val definition = randomWords.definition(word)
-
-                var result = ""
-                if (definition.isEmpty()) {
-                    val wordCapitalizedOrNot = word.replaceFirstChar { it.uppercase() }
-                    val targetResponse = randomWords.definition(wordCapitalizedOrNot)
-                    result = if (targetResponse.isNotEmpty()) {
-                        var text = targetResponse.first().text
-                        if (text.contains("<xref>")) {
-                            val newText = text.split("<xref>").toMutableList()
-                            text = newText.first()
-                            newText.remove(newText.first())
-                            newText.map {
-                                val nText = it.split("</xref>").toMutableList()
-                                text += nText.first() + nText.last()
-                            }
-                            text
-                        } else if (text.contains("<em>")) {
-                            val newText = text.split("<em>").toMutableList()
-                            text = newText.first()
-                            newText.remove(newText.first())
-                            newText.map {
-                                val textSplit = it.split("</em>").toMutableList()
-                                if (word.lowercase() == textSplit.first().lowercase()) {
-                                    val targetWord = textSplit.first()
-                                    var textAnswer = ""
-                                    targetWord.map {
-                                        textAnswer += "_"
-                                    }
-                                    text += textAnswer + textSplit.last()
-                                }
-                            }
-                            text
-                        } else {
-                            text
-                        }
-                    } else {
-                        result
-                    }
-                } else {
-                    var text = definition.first().text
-                    result = if (text.contains("<xref>")) {
-                        val newText = text.split("<xref>").toMutableList()
-                        text = newText.first()
-                        newText.remove(newText.first())
-                        newText.map {
-                            val nText = it.split("</xref>").toMutableList()
-                            text += nText.first() + nText.last()
-                        }
-                        text
-                    } else if (text.contains("<em>")) {
-                        val newText = text.split("<em>").toMutableList()
-                        text = newText.first()
-                        newText.remove(newText.first())
-                        newText.map {
-                            val textSplit = it.split("</em>").toMutableList()
-                            if (word.lowercase() != textSplit.first().lowercase()) {
-                                val targetWord = textSplit.first()
-                                var textAnswer = ""
-                                targetWord.map {
-                                    textAnswer += "_"
-                                }
-                                text += textAnswer + textSplit.last()
-                            }
-                        }
-                        text
-                    } else {
-                        text
-                    }
-                }
-                WordAnswer(value = word, definition = result)
-            }.toMutableList()
+            dataSource.questionItems().toMutableList()
         }
 
         totalWords = dataSet.size

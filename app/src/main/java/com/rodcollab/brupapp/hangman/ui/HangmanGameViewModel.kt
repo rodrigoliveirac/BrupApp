@@ -3,6 +3,7 @@ package com.rodcollab.brupapp.hangman.ui
 import androidx.compose.runtime.Composable
 import com.rodcollab.brupapp.di.ConnectionObserver.hasConnection
 import com.rodcollab.brupapp.hangman.domain.Trial
+import com.rodcollab.brupapp.hangman.repository.AnswerModel
 import com.rodcollab.brupapp.hangman.repository.HangmanGame
 import com.rodcollab.brupapp.hangman.repository.HangmanGameImpl
 import com.rodcollab.brupapp.hangman.repository.ReviewAnswer
@@ -82,6 +83,9 @@ class HangmanGameViewModel(
 
     private fun gameStateAfterGameOnOrOver(state: Trial) =
         if (state.gameOn || state.gameOver) {
+
+            reviewAnswer.addReviewAnswer(AnswerModel(word = state.answer, isCorrect = state.gameOn))
+
             if (state.gameIsFinish) {
                 GameState.ENDED
             } else {
@@ -140,6 +144,9 @@ class HangmanGameViewModel(
 
     private fun restartGame() {
         launch {
+
+            reviewAnswer.clear()
+
             if (hasConnection) {
                 _uiState.update {
                     it.copy(

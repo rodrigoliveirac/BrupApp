@@ -14,6 +14,7 @@ import androidx.compose.ui.Modifier
 import com.rodcollab.brupapp.app.theme.BrupAppTheme
 import com.rodcollab.brupapp.di.ConnectionObserver
 import com.rodcollab.brupapp.hangman.ui.ScreenHost
+import com.rodcollab.brupapp.util.sharePerformance
 
 class MainActivity : ComponentActivity() {
 
@@ -56,7 +57,9 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    ScreenHost()
+                    ScreenHost(sharePerformance = { screenshot ->
+                        sharePerformance(screenshot)
+                    })
                 }
             }
         }

@@ -23,7 +23,6 @@ fun Trial.toExternal(options: List<LetterModel>) =
         gameIsFinish,
         newGame,
         Pair(performance, "${(performance * 100).toInt()}%"),
-        displayPerformance = false,
         networkStatus = true,
         displaySeePerformanceButton = gameIsFinish,
     )

@@ -3,8 +3,11 @@ package com.rodcollab.brupapp.hangman.ui
 import androidx.compose.runtime.Composable
 import com.rodcollab.brupapp.di.ConnectionObserver.hasConnection
 import com.rodcollab.brupapp.hangman.domain.Trial
+import com.rodcollab.brupapp.hangman.repository.AnswerModel
 import com.rodcollab.brupapp.hangman.repository.HangmanGame
 import com.rodcollab.brupapp.hangman.repository.HangmanGameImpl
+import com.rodcollab.brupapp.hangman.repository.ReviewAnswer
+import com.rodcollab.brupapp.hangman.repository.ReviewAnswerImpl
 import com.rodcollab.brupapp.hangman.ui.enums.GameMoveForward
 import com.rodcollab.brupapp.hangman.ui.enums.GameState
 import com.rodcollab.brupapp.hangman.ui.intent.UiDialogIntent
@@ -19,7 +22,10 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
-class HangmanGameViewModel(private val repository: HangmanGame) : CoroutineScope by MainScope() {
+class HangmanGameViewModel(
+    private val repository: HangmanGame,
+    private val reviewAnswer: ReviewAnswer
+) : CoroutineScope by MainScope() {
 
     private val _uiState: MutableStateFlow<HangmanGameUiState> by lazy {
         MutableStateFlow(HangmanGameUiState(gameState = GameState.PREPARING))
@@ -53,6 +59,15 @@ class HangmanGameViewModel(private val repository: HangmanGame) : CoroutineScope
             is UiDialogIntent.StartNewGame -> restartGame()
             is UiDialogIntent.NextWord -> nextWord()
             is UiDialogIntent.DisplayPerformance -> displayPerformance(event.display)
+            is UiDialogIntent.DisplayReview -> displayReview(event.display)
+        }
+    }
+
+    private fun displayReview(display: Boolean) {
+        _uiState.update {
+            it.copy(
+                displayReview = display,
+            )
         }
     }
 
@@ -77,6 +92,11 @@ class HangmanGameViewModel(private val repository: HangmanGame) : CoroutineScope
 
     private fun gameStateAfterGameOnOrOver(state: Trial) =
         if (state.gameOn || state.gameOver) {
+
+            letters = letters.map { it.copy(isEnabled = false) }.toMutableList()
+
+            reviewAnswer.addReviewAnswer(AnswerModel(word = state.answer, isCorrect = state.gameOn))
+
             if (state.gameIsFinish) {
                 GameState.ENDED
             } else {
@@ -135,11 +155,13 @@ class HangmanGameViewModel(private val repository: HangmanGame) : CoroutineScope
 
     private fun restartGame() {
         launch {
+
+            reviewAnswer.clear()
+
             if (hasConnection) {
                 _uiState.update {
                     it.copy(
                         gameState = GameState.PREPARING,
-                        displayPerformance = false
                     )
                 }
                 withContext(Dispatchers.IO) {
@@ -163,16 +185,19 @@ class HangmanGameViewModel(private val repository: HangmanGame) : CoroutineScope
     private fun displayPerformance(display: Boolean) {
         _uiState.update {
             it.copy(
-                displayPerformance = display,
                 displaySeePerformanceButton = !display,
-                gameState = GameState.DISPLAY_PERFORMANCE
+                gameState = GameState.DISPLAY_PERFORMANCE,
+                review = reviewAnswer.reviewAnswers()
             )
         }
     }
 
     companion object {
         val Factory = initializer {
-            HangmanGameViewModel(HangmanGameImpl.getInstance())
+            HangmanGameViewModel(
+                repository = HangmanGameImpl.getInstance(),
+                reviewAnswer = ReviewAnswerImpl.getInstance()
+            )
         }
     }
 }

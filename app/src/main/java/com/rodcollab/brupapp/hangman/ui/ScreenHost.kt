@@ -1,5 +1,6 @@
 package com.rodcollab.brupapp.hangman.ui
 
+import android.net.Uri
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -19,20 +20,22 @@ import com.rodcollab.brupapp.hangman.ui.components.game.SetupHangmanGameScreen
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ScreenHost(gameViewModel: HangmanGameViewModel = viewModel(factory = HangmanGameViewModel.Factory)) {
+fun ScreenHost(sharePerformance:(Uri) -> Unit, gameViewModel: HangmanGameViewModel = viewModel(factory = HangmanGameViewModel.Factory)) {
 
     val uiState by gameViewModel.uiState.collectAsState()
-
-    GameMenuDialog(
-        uiState = uiState,
-        onIntent = { intent -> gameViewModel.onIntent(intent) }
-    )
 
     Scaffold(topBar = {
         CenterAlignedTopAppBar(modifier = Modifier.shadow(6.dp), title = {
             Text(text = "GuessWord")
         })
     }) {
+
+        GameMenuDialog(
+            uiState = uiState,
+            sharePerformance = sharePerformance,
+            onIntent = { intent -> gameViewModel.onIntent(intent) }
+        )
+
         Box(
             modifier = Modifier
                 .fillMaxSize()

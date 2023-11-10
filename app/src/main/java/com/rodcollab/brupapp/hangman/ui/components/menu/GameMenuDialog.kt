@@ -1,5 +1,6 @@
 package com.rodcollab.brupapp.hangman.ui.components.menu
 
+import android.net.Uri
 import androidx.compose.runtime.Composable
 import com.rodcollab.brupapp.hangman.ui.HangmanGameUiState
 import com.rodcollab.brupapp.hangman.ui.enums.GameState.DISPLAY_PERFORMANCE
@@ -12,6 +13,7 @@ import com.rodcollab.brupapp.hangman.ui.intent.UiDialogIntent
 @Composable
 fun GameMenuDialog(
     uiState: HangmanGameUiState,
+    sharePerformance: (Uri) -> Unit,
     onIntent: (UiDialogIntent) -> Unit
 ) {
 
@@ -46,6 +48,9 @@ fun GameMenuDialog(
             PerformanceGameDialog(
                 performanceValue = uiState.performance.first,
                 performanceText = uiState.performance.second,
+                displayReview = uiState.displayReview,
+                review = uiState.review,
+                sharePerformance = sharePerformance,
                 onIntent
             )
         }

@@ -11,7 +11,8 @@ import com.rodcollab.brupapp.hangman.ui.model.LetterModel
 fun KeyBoard(
     modifier: Modifier = Modifier,
     onTapped: (Char) -> Unit,
-    letters: List<LetterModel>
+    letters: List<LetterModel>,
+    chunks:Int,
 ) {
-    ChunksKeyboard(modifier = modifier.padding(start = 16.dp).fillMaxWidth(), letters, onTapped)
+    ChunksKeyboard(modifier = modifier.padding(start = 16.dp).fillMaxWidth(), letters,chunks, onTapped)
 }

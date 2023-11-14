@@ -10,11 +10,13 @@ import com.rodcollab.brupapp.hangman.ui.model.LetterModel
 fun ChunksKeyboard(
     modifier: Modifier,
     letters: List<LetterModel>,
+    chunks:Int,
     verifyAnswer: (Char) -> Unit
 ) {
     Chunks(
         modifier = modifier,
-        letters = letters
+        letters = letters,
+        chunks = chunks
     ) { chars ->
         chars.forEach { letter ->
             CustomKeyboardButton(
@@ -29,9 +31,10 @@ fun ChunksKeyboard(
 fun Chunks(
     modifier: Modifier,
     letters: List<LetterModel>,
+    chunks: Int,
     content: @Composable RowScope.(List<LetterModel>) -> Unit
 ) {
-    letters.chunked(8).forEach {
+    letters.chunked(chunks).forEach {
         Row(modifier = modifier) {
             content(it)
         }

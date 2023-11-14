@@ -12,7 +12,6 @@ fun Trial.toExternal(options: List<LetterModel>) =
             "Chances left: " to chances,
             "Hits: " to hits,
             "Wrongs: " to errors,
-            "Used letters: " to usedLetters.toString()
         ),
         gameOn,
         gameOver,

@@ -1,7 +1,10 @@
 package com.rodcollab.brupapp.hangman.repository
 
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
+
 interface ReviewAnswer {
-    fun addReviewAnswer(reviewAnswerModel: AnswerModel)
+    suspend fun addReviewAnswer(reviewAnswerModel: AnswerModel)
     fun reviewAnswers(): List<AnswerModel>
 
     fun clear()
@@ -9,19 +12,24 @@ interface ReviewAnswer {
 
 class ReviewAnswerImpl : ReviewAnswer {
 
-    private val reviewAnswers = Array(5) { AnswerModel(word = "",isCorrect = true) }
+    private var reviewAnswers = answerModels()
     private var count: Int = 0
 
-    override fun addReviewAnswer(reviewAnswerModel: AnswerModel) {
-        reviewAnswers[count] = reviewAnswerModel
-        count++
+    override suspend fun addReviewAnswer(reviewAnswerModel: AnswerModel) {
+        withContext(Dispatchers.IO) {
+            reviewAnswers[count] = reviewAnswerModel
+            count++
+        }
     }
 
     override fun reviewAnswers(): List<AnswerModel> = reviewAnswers.toList()
 
     override fun clear() {
         count = 0
+        reviewAnswers = answerModels()
     }
+
+    private fun answerModels() = Array(5) { AnswerModel(word = "", isCorrect = true) }
 
 
     companion object {

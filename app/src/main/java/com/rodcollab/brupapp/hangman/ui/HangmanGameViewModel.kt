@@ -97,10 +97,15 @@ class HangmanGameViewModel(
         }
     }
 
-    private fun gameStateAfterGameOnOrOver(state: Trial) =
+    private suspend fun gameStateAfterGameOnOrOver(state: Trial) =
         if (state.gameOn || state.gameOver) {
 
-            letters = letters.map { it.copy(isEnabled = false) }.toMutableList()
+            reviewAnswer.addReviewAnswer(
+                AnswerModel(
+                    word = state.answer,
+                    isCorrect = state.gameOn
+                )
+            )
 
 
             if (state.gameIsFinish) {

@@ -39,17 +39,24 @@ class HangmanGameViewModel(
     }
 
     fun verifyAnswerThenUpdateGameState(char: Char) {
+        launch {
+            val game = repository.gameState()
 
-        repository.verifyAnswerThenUpdateGameState(char)
+            if (!game.gameOn && !game.gameOver) {
 
-        updateLettersUiModel(GameMoveForward.VERIFY_ANSWER, char)
+                repository.verifyAnswerThenUpdateGameState(char)
 
-        val state = repository.gameState()
+                updateLettersUiModel(GameMoveForward.VERIFY_ANSWER, char)
 
-        val gameState = gameStateAfterGameOnOrOver(state)
+                val state = repository.gameState()
 
-        _uiState.update {
-            state.toExternal(options = letters).copy(gameState = gameState)
+                val gameState = gameStateAfterGameOnOrOver(state)
+
+                _uiState.update {
+                    state.toExternal(options = letters)
+                        .copy(gameState = gameState)
+                }
+            }
         }
     }
 
@@ -95,7 +102,6 @@ class HangmanGameViewModel(
 
             letters = letters.map { it.copy(isEnabled = false) }.toMutableList()
 
-            reviewAnswer.addReviewAnswer(AnswerModel(word = state.answer, isCorrect = state.gameOn))
 
             if (state.gameIsFinish) {
                 GameState.ENDED

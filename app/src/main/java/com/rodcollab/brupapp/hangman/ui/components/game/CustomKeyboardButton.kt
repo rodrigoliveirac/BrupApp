@@ -40,7 +40,7 @@ fun CustomKeyboardButton(
                 scaleY = if (currentLetterTapped == letterModel.char) 1.2f else 1.0f
                 alpha = if (currentLetterTapped != letterModel.char && letterModel.isSelected) 0.5f else 1.0f
             }
-            .pointerInput(letterModel) {
+            .pointerInput(currentLetterTapped, letterModel) {
                 detectTapGestures(
                     onPress = {
                         if (letterModel.isEnabled) {

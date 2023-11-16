@@ -8,7 +8,7 @@ import kotlinx.coroutines.withContext
 
 interface HangmanGame {
     suspend fun prepareGame()
-    fun verifyAnswerThenUpdateGameState(letter: Char)
+    suspend fun verifyAnswerThenUpdateGameState(letter: Char)
     suspend fun resetGame()
     fun gameState(): Trial
 }
@@ -86,7 +86,7 @@ class HangmanGameImpl(
     }
 
 
-    override fun verifyAnswerThenUpdateGameState(letter: Char) {
+    override suspend fun verifyAnswerThenUpdateGameState(letter: Char) {
 
         addToGuessedLetters(letter)
 

@@ -1,8 +1,14 @@
 package com.rodcollab.brupapp.di
 
+import android.app.Application
+import com.google.firebase.firestore.ktx.firestore
+import com.google.firebase.ktx.Firebase
 import com.jakewharton.retrofit2.converter.kotlinx.serialization.asConverterFactory
+import com.rodcollab.brupapp.app.SharedPreferencesHandlerImpl
 import com.rodcollab.brupapp.data.NetworkRandomWordsImpl
 import com.rodcollab.brupapp.data.WordnikService
+import com.rodcollab.brupapp.multiplayer.GameRoomRepositoryImpl
+import com.rodcollab.brupapp.multiplayer.NetworkDataSourceImpl
 import kotlinx.serialization.json.Json
 import okhttp3.MediaType.Companion.toMediaType
 import retrofit2.Retrofit
@@ -41,8 +47,14 @@ object ConnectionObserver {
 
 }
 
-class AppContainerImpl() {
+class AppContainerImpl(application: Application) {
     init {
         NetworkRandomWordsImpl.getInstance()
+        val sharedPreferences = application.getSharedPreferences(USER_APPLICATION_ID, 0)
+        GameRoomRepositoryImpl.getInstance(SharedPreferencesHandlerImpl(sharedPreferences.edit(),sharedPreferences),NetworkDataSourceImpl(Firebase.firestore))
+    }
+
+    companion object {
+        const val USER_APPLICATION_ID = "USER_APPLICATION_ID"
     }
 }

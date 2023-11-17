@@ -20,7 +20,11 @@ import com.rodcollab.brupapp.hangman.ui.components.game.SetupHangmanGameScreen
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ScreenHost(sharePerformance:(Uri) -> Unit, gameViewModel: HangmanGameViewModel = viewModel(factory = HangmanGameViewModel.Factory)) {
+fun ScreenHost(
+    toMultiplayerScreen: () -> Unit,
+    sharePerformance: (Uri) -> Unit,
+    gameViewModel: HangmanGameViewModel = viewModel(factory = HangmanGameViewModel.Factory)
+) {
 
     val uiState by gameViewModel.uiState.collectAsState()
 
@@ -33,7 +37,8 @@ fun ScreenHost(sharePerformance:(Uri) -> Unit, gameViewModel: HangmanGameViewMod
         GameMenuDialog(
             uiState = uiState,
             sharePerformance = sharePerformance,
-            onIntent = { intent -> gameViewModel.onIntent(intent) }
+            onIntent = { intent -> gameViewModel.onIntent(intent) },
+            toMultiplayerScreen = toMultiplayerScreen
         )
 
         Box(

@@ -3,6 +3,7 @@ package com.rodcollab.brupapp.hangman.ui.components.menu
 import android.net.Uri
 import androidx.compose.runtime.Composable
 import com.rodcollab.brupapp.hangman.ui.HangmanGameUiState
+import com.rodcollab.brupapp.hangman.ui.enums.GameState.MENU
 import com.rodcollab.brupapp.hangman.ui.enums.GameState.DISPLAY_PERFORMANCE
 import com.rodcollab.brupapp.hangman.ui.enums.GameState.ENDED
 import com.rodcollab.brupapp.hangman.ui.enums.GameState.NO_NETWORK
@@ -14,7 +15,8 @@ import com.rodcollab.brupapp.hangman.ui.intent.UiDialogIntent
 fun GameMenuDialog(
     uiState: HangmanGameUiState,
     sharePerformance: (Uri) -> Unit,
-    onIntent: (UiDialogIntent) -> Unit
+    onIntent: (UiDialogIntent) -> Unit,
+    toMultiplayerScreen: () -> Unit
 ) {
 
     when (uiState.gameState) {
@@ -25,6 +27,10 @@ fun GameMenuDialog(
 
         PREPARING -> {
             PrepareGameDialog()
+        }
+
+        MENU -> {
+            MenuDialog(onIntent = onIntent, toMultiplayerScreen = toMultiplayerScreen)
         }
 
         SHOW_RESPONSE -> {

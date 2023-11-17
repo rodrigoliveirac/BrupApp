@@ -28,7 +28,7 @@ fun EndOfTheGameDialog(
         Button(modifier = Modifier
             .fillMaxWidth()
             .padding(bottom = 4.dp), onClick = {
-            onIntent(UiDialogIntent.StartNewGame)
+            onIntent(UiDialogIntent.RestartGame)
         }) {
             Text(text = "Start a new game")
         }

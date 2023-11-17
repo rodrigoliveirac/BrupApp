@@ -28,15 +28,11 @@ class HangmanGameViewModel(
 ) : CoroutineScope by MainScope() {
 
     private val _uiState: MutableStateFlow<HangmanGameUiState> by lazy {
-        MutableStateFlow(HangmanGameUiState(gameState = GameState.PREPARING))
+        MutableStateFlow(HangmanGameUiState(gameState = GameState.MENU))
     }
     val uiState = _uiState.asStateFlow()
 
     private var letters = alphabet.toLetterModels().toMutableList()
-
-    init {
-        prepareGame()
-    }
 
     fun verifyAnswerThenUpdateGameState(char: Char) {
         launch {
@@ -63,10 +59,11 @@ class HangmanGameViewModel(
     fun onIntent(event: UiDialogIntent) {
         when (event) {
             is UiDialogIntent.RefreshConnection -> refresh()
-            is UiDialogIntent.StartNewGame -> restartGame()
+            is UiDialogIntent.RestartGame -> restartGame()
             is UiDialogIntent.NextWord -> nextWord()
             is UiDialogIntent.DisplayPerformance -> displayPerformance(event.display)
             is UiDialogIntent.DisplayReview -> displayReview(event.display)
+            is  UiDialogIntent.StartNewGame -> prepareGame()
         }
     }
 
@@ -82,6 +79,13 @@ class HangmanGameViewModel(
         launch {
 
             val gameState = if (hasConnection) {
+
+                _uiState.update {
+                    it.copy(
+                        gameState = GameState.PREPARING,
+                    )
+                }
+
                 repository.prepareGame()
                 GameState.IDLE
             } else {

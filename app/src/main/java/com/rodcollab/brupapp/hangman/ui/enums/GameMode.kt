@@ -11,5 +11,6 @@ enum class GameState {
     ENDED,
     DISPLAY_PERFORMANCE,
     NO_NETWORK,
+    MENU,
     IDLE
 }

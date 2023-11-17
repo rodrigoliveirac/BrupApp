@@ -11,9 +11,13 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.ui.Modifier
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
 import com.rodcollab.brupapp.app.theme.BrupAppTheme
 import com.rodcollab.brupapp.di.ConnectionObserver
 import com.rodcollab.brupapp.hangman.ui.ScreenHost
+import com.rodcollab.brupapp.multiplayer.ui.MultiplayerHost
 import com.rodcollab.brupapp.util.sharePerformance
 
 class MainActivity : ComponentActivity() {
@@ -57,9 +61,19 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    ScreenHost(sharePerformance = { screenshot ->
-                        sharePerformance(screenshot)
-                    })
+                    val navController = rememberNavController()
+                    NavHost(navController = navController, startDestination = "MenuDialogHangman") {
+                        composable(route = "MenuDialogHangman") {
+                            ScreenHost(toMultiplayerScreen = {
+                                navController.navigate("MultiplayerScreen")
+                            }, sharePerformance = { screenshot ->
+                                sharePerformance(screenshot)
+                            })
+                        }
+                        composable(route = "MultiplayerScreen") {
+                            MultiplayerHost()
+                        }
+                    }
                 }
             }
         }
